@@ -23,9 +23,9 @@ const AuthorityGuard = (props: AuthorityGuard) => {
 
   const isAuthenticated = useAuthentication();
 
-  if (!isAuthenticated) {
-    return <Navigate to="/" />;
-  }
+  // if (!isAuthenticated) {
+  //   return <Navigate to="/" />;
+  // }
 
   // return true ? children : <Navigate to="/dashboard/dispute-log" />;
   return children;

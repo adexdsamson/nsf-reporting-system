@@ -7,6 +7,7 @@ import { NotFound } from "@/layouts/NotFound";
 import { PublicRoute } from "./PublicRoute";
 import { Login } from "@/pages/Login";
 import { DashboardPage } from "@/pages/DashboardPage";
+import { TransactionDetail } from "@/pages/Detail";
 
 export const routes = (
   <>
@@ -29,17 +30,16 @@ export const routes = (
       errorElement={<ErrorFallback />}
       element={<Dashboard />}
     >
-      {[{ path: "/dashboard/home", element: <DashboardPage /> }].map(
-        (item, index) => (
-          <Route
-            key={index}
-            path={item.path}
-            element={
-              <ProtectedRoute key={index}>{item.element}</ProtectedRoute>
-            }
-          />
-        )
-      )}
+      {[
+        { path: "/dashboard/home", element: <DashboardPage /> },
+        { path: "/dashboard/detail", element: <TransactionDetail /> },
+      ].map((item, index) => (
+        <Route
+          key={index}
+          path={item.path}
+          element={<ProtectedRoute key={index}>{item.element}</ProtectedRoute>}
+        />
+      ))}
     </Route>
   </>
 );

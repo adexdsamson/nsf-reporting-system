@@ -1,10 +1,18 @@
-import { faker } from "@faker-js/faker";
+import { faker } from '@faker-js/faker';
 
-export const makeArrayData = <T = unknown>(func: () => T) =>
-  faker.helpers.multiple(func, { count: 10 });
+const TRANSACTION_TYPES = ['TRANSFER', 'DEPOSIT', 'WITHDRAWAL', 'PAYMENT'];
+const PAYMENT_METHODS = ['CARD', 'BANK_TRANSFER', 'WALLET', 'GIFT_CARD'];
+const TRANSFER_TYPES = ['LOCAL', 'INTERNATIONAL', 'SAME_BANK', 'INTER_BANK'];
+const CARD_TYPES = ['VISA', 'MASTERCARD', 'VERVE', 'AMEX'];
+const CURRENCIES = ['NGN', 'USD', 'EUR', 'GBP'];
 
-export const getTransactionData = () =>
-  makeArrayData(() => ({
+export const generateMockTransaction = () => {
+  const transactionType = faker.helpers.arrayElement(TRANSACTION_TYPES);
+  const paymentMethod = faker.helpers.arrayElement(PAYMENT_METHODS);
+  const currency = faker.helpers.arrayElement(CURRENCIES);
+  const amount = faker.number.float({ min: 100, max: 1000000, precision: 0.01 });
+  
+  return {
     fintech_id: faker.string.uuid(),
     country: faker.location.country(),
     timestamp: faker.date.recent().toISOString(),
@@ -23,7 +31,7 @@ export const getTransactionData = () =>
     card_country: faker.location.country(),
     card_last4: faker.string.numeric(4),
     card_expiry: faker.date.future().toISOString().split('T')[0],
-    card_type: faker.helpers.arrayElement(['VISA', 'MASTERCARD', 'VERVE', 'AMEX']),
+    card_type: faker.helpers.arrayElement(CARD_TYPES),
     card_bin: faker.string.numeric(6),
     cvv_result: faker.helpers.arrayElement(['MATCH', 'NO_MATCH', 'NOT_PROCESSED']),
     username: faker.internet.userName(),
@@ -44,17 +52,17 @@ export const getTransactionData = () =>
     browser_name: faker.helpers.arrayElement(['Chrome', 'Firefox', 'Safari', 'Edge']),
     brand_id: faker.string.uuid(),
     cookie_hash: faker.string.alphanumeric(32),
-    transaction_amount: faker.number.float({ min: 100, max: 1000000, precision: 0.01 }),
+    transaction_amount: amount,
     transaction_or_session_id: faker.string.uuid(),
-    transaction_type: faker.helpers.arrayElement(['TRANSFER', 'DEPOSIT', 'WITHDRAWAL', 'PAYMENT']),
-    transaction_currency: faker.helpers.arrayElement(['NGN', 'USD', 'EUR', 'GBP']),
+    transaction_type: transactionType,
+    transaction_currency: currency,
     transaction_description: faker.lorem.sentence(),
-    payment_method: faker.helpers.arrayElement(['CARD', 'BANK_TRANSFER', 'WALLET', 'GIFT_CARD']),
+    payment_method: paymentMethod,
     receiver_location: `${faker.location.city()}, ${faker.location.country()}`,
     sender_location: `${faker.location.city()}, ${faker.location.country()}`,
     destination_sortcode: faker.string.numeric(6),
     sortcode_bank_location: faker.location.city(),
-    transfer_type: faker.helpers.arrayElement(['LOCAL', 'INTERNATIONAL', 'SAME_BANK', 'INTER_BANK']),
+    transfer_type: faker.helpers.arrayElement(TRANSFER_TYPES),
     transfer_session_id: faker.string.uuid(),
     receiver_bank_account: faker.finance.accountNumber(),
     receiver_bank_name: faker.company.name(),
@@ -63,10 +71,16 @@ export const getTransactionData = () =>
     wallet_id: faker.string.uuid(),
     wallet_balance_before: faker.number.float({ min: 1000, max: 10000000, precision: 0.01 }),
     wallet_balance_after: faker.number.float({ min: 1000, max: 10000000, precision: 0.01 }),
-    wallet_currency: faker.helpers.arrayElement(['NGN', 'USD', 'EUR', 'GBP']),
+    wallet_currency: currency,
     wallet_transaction_id: faker.string.uuid(),
-    gift_card_id: faker.helpers.arrayElement(['CARD', 'BANK_TRANSFER', 'WALLET', 'GIFT_CARD']) === 'GIFT_CARD' ? faker.string.uuid() : null,
-    gift_card_provider: faker.helpers.arrayElement(['CARD', 'BANK_TRANSFER', 'WALLET', 'GIFT_CARD']) === 'GIFT_CARD' ? faker.company.name() : null,
-    gift_card_currency: faker.helpers.arrayElement(['CARD', 'BANK_TRANSFER', 'WALLET', 'GIFT_CARD']) === 'GIFT_CARD' ? faker.helpers.arrayElement(['NGN', 'USD', 'EUR', 'GBP']) : null,
-    gift_card_transaction_id: faker.helpers.arrayElement(['CARD', 'BANK_TRANSFER', 'WALLET', 'GIFT_CARD']) === 'GIFT_CARD' ? faker.string.uuid() : null
-  }));
+    gift_card_id: paymentMethod === 'GIFT_CARD' ? faker.string.uuid() : null,
+    gift_card_provider: paymentMethod === 'GIFT_CARD' ? faker.company.name() : null,
+    gift_card_currency: paymentMethod === 'GIFT_CARD' ? currency : null,
+    gift_card_transaction_id: paymentMethod === 'GIFT_CARD' ? faker.string.uuid() : null,
+  };
+};
+
+// Generate an array of mock transactions
+export const generateMockTransactions = (count: number = 10) => {
+  return Array.from({ length: count }, generateMockTransaction);
+};

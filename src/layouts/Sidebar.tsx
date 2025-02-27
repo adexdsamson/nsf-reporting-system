@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { MdDashboard } from "react-icons/md";
-import { RxHamburgerMenu } from "react-icons/rx";
-import Img from "../assets/react.svg";
-import { MdLogout } from "react-icons/md";
-import { Link, useLocation } from "react-router-dom";
+// import { RxHamburgerMenu } from "react-icons/rx";
+// import Img from "../assets/react.svg";
+// import { MdLogout } from "react-icons/md";
+import { useLocation } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -17,15 +17,15 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
-import { ComponentClass, ComponentProps, FunctionComponent } from "react";
-import { ConfirmAlert } from "@/components/layouts/ConfirmAlert";
+// import { ComponentClass, ComponentProps, FunctionComponent } from "react";
+// import { ConfirmAlert } from "@/components/layouts/ConfirmAlert";
 import { IconType } from "react-icons/lib";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ChevronUp, User2 } from "lucide-react";
 
 type sideBarProps = {
-  isSidebarCollapsed: boolean;
-  showSidebarSm?: boolean;
+  // isSidebarCollapsed: boolean;
+  // showSidebarSm?: boolean;
 };
 
 type NavigationItem = {
@@ -55,7 +55,7 @@ export const SideBar = ({}: sideBarProps) => {
   ];
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="icon"  >
       <SidebarHeader />
       <SidebarContent>
         <SidebarGroup>
@@ -67,7 +67,7 @@ export const SideBar = ({}: sideBarProps) => {
                   <SidebarMenuButton asChild>
                     <a href={item.to}>
                       <item.icon />
-                      <span>{item.title}</span>
+                      {/* <span>{item.title}</span> */}
                     </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
