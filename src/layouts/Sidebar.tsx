@@ -3,7 +3,7 @@ import { MdDashboard } from "react-icons/md";
 // import { RxHamburgerMenu } from "react-icons/rx";
 // import Img from "../assets/react.svg";
 // import { MdLogout } from "react-icons/md";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -20,7 +20,7 @@ import {
 // import { ComponentClass, ComponentProps, FunctionComponent } from "react";
 // import { ConfirmAlert } from "@/components/layouts/ConfirmAlert";
 import { IconType } from "react-icons/lib";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,  } from "@/components/ui/dropdown-menu";
 import { ChevronUp, User2 } from "lucide-react";
 
 type sideBarProps = {
@@ -38,6 +38,7 @@ type NavigationItem = {
 
 export const SideBar = ({}: sideBarProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const navigation: NavigationItem[] = [
     {
@@ -94,14 +95,8 @@ export const SideBar = ({}: sideBarProps) => {
                 side="top"
                 className="w-[--radix-popper-anchor-width]"
               >
-                <DropdownMenuItem>
-                  <span>Account</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <span>Billing</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <span>Sign out</span>
+                <DropdownMenuItem onClick={() => navigate(-1)}>
+                  <span>Back</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

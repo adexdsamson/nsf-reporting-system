@@ -124,7 +124,7 @@ interface Bank {
   isBranch?: boolean;
 }
 
-const getBankColor = (bank: Bank, selectedBank: Bank | null) => {
+const getBankColor = (bank?: Bank, selectedBank?: Bank | null) => {
   // Generate a unique color for each parent bank
   const bankColors: { [key: string]: string } = {
     FBN: "#4a90e2",
@@ -147,8 +147,8 @@ const getBankColor = (bank: Bank, selectedBank: Bank | null) => {
     ENBD: "#2c3e50"
   };
 
-  const bankCode = bank.parentBank || bank.code;
-  const baseColor = bankColors[bankCode] || "#4a90e2";
+  const bankCode = bank?.parentBank || bank?.code;
+  const baseColor = bankColors?.[bankCode ?? ''] || "#4a90e2";
 
   // If there's a selected bank, dim other banks
   if (selectedBank && selectedBank.code !== bankCode && selectedBank.parentBank !== bankCode) {
@@ -216,19 +216,6 @@ export const GeoMap = ({
   useEffect(() => {
     const svg = select(svgRef.current);
 
-    const minProp = min(
-      data.features,
-      (feature) => feature.properties?.[property as keyof Properties]
-    );
-    const maxProp = max(
-      data.features,
-      (feature) => feature?.properties?.[property as any]
-    );
-    
-    const colorScale = scaleLinear()
-      .domain([minProp, maxProp] as any)
-      .range(["#1a1d2d", "#4a90e2"] as any);
-
     // use resized dimensions
     // but fall back to getBoundingClientRect, if no dimensions yet.
     const { width = 0, height = 0 } =
@@ -254,7 +241,7 @@ export const GeoMap = ({
       .attr("class", "country")
       .transition()
       .attr("fill", (feature) =>
-        feature.properties['name'] === 'Nigeria' ? "#4a90e2" : "#1a1d2d"
+        feature.properties['name'] === 'Nigeria' ? "#1a1d2d" : "#1a1d2d"
       )
       .attr("d", (feature) => pathGenerator(feature as any));
 
@@ -262,7 +249,7 @@ export const GeoMap = ({
     // render transaction arcs with independent transitions
     svg
       .selectAll(".transaction")
-      .data(transactions, (d: Transaction) => d.id)
+      .data(transactions, (d: any) => d.id)
       .join(
         (enter) =>
           enter
@@ -275,7 +262,7 @@ export const GeoMap = ({
                   b.coordinates[0] === d.source[0] &&
                   b.coordinates[1] === d.source[1]
               );
-              return getBankColor(sourceBank?.type || "commercial");
+              return getBankColor(sourceBank, selectedBank);
             })
             .attr("stroke-width", 1.5)
             .attr("d", (d) => generateArcPath(d.source, d.target, projection))
@@ -287,7 +274,7 @@ export const GeoMap = ({
                 .attr("stroke-dasharray", `${length} ${length}`)
                 .attr("stroke-dashoffset", length)
                 .transition()
-                .duration((d) => {
+                .duration((d: any) => {
                   // Calculate if it's an international transaction based on coordinates
                   const sourceLat = d.source[1];
                   const isInternational = Math.abs(sourceLat) > 15; // Rough latitude check for Nigeria's borders
@@ -296,14 +283,14 @@ export const GeoMap = ({
                 .ease(easeLinear)
                 .attr("stroke-dashoffset", 0)
                 .transition()
-                .duration((d) => {
+                .duration((d: any) => {
                   const sourceLat = d.source[1];
                   const isInternational = Math.abs(sourceLat) > 15;
                   return isInternational ? 1600 : 800; // Slower fade-out for international transactions
                 })
                 .ease(easeLinear)
                 .attr("stroke-dashoffset", -length)
-                .attrTween("stroke-opacity", () => (t) => 1 - t) // Gradually fade out
+                .attrTween("stroke-opacity", () => (t) => (1 - t).toString()) // Gradually fade out
                 .on("end", function () {
                   node.remove();
                 });
@@ -319,11 +306,12 @@ export const GeoMap = ({
       .append("feGaussianBlur")
       .attr("stdDeviation", "2")
       .attr("result", "coloredBlur");
+
     const feMerge = filter.append("feMerge");
     feMerge.append("feMergeNode").attr("in", "coloredBlur");
     feMerge.append("feMergeNode").attr("in", "SourceGraphic");
 
-    // render bank nodes with pulsing effect
+    // create bank nodes with their coordinates
     const bankNodes = svg
       .selectAll(".bank-node-group")
       .data(banks)
@@ -338,37 +326,37 @@ export const GeoMap = ({
       );
 
     // Outer glow circle
-    bankNodes
-      .selectAll(".bank-node-pulse")
-      .data((d) => [d])
-      .join("circle")
-      .attr("class", "bank-node-pulse")
-      .attr("r", 6)
-      .attr("fill", "none")
-      .attr("stroke", "#FF5533")
-      .attr("stroke-width", 2)
-      .attr("opacity", 0.6)
-      .style("filter", "url(#glow)")
-      .transition()
-      .duration(1500)
-      .attr("r", 12)
-      .attr("opacity", 0)
-      .ease(easeLinear)
-      .on("end", function () {
-        animationFrameRef.current = requestAnimationFrame(() => {
-          select(this)
-            .attr("r", 6)
-            .attr("opacity", 0.6)
-            .transition()
-            .duration(1500)
-            .attr("r", 12)
-            .attr("opacity", 0)
-            .ease(easeLinear)
-            .on("end", function () {
-              select(this).remove();
-            });
-        });
-      });
+    // bankNodes
+    //   .selectAll(".bank-node-pulse")
+    //   .data((d) => [d])
+    //   .join("circle")
+    //   .attr("class", "bank-node-pulse")
+    //   .attr("r", 6)
+    //   .attr("fill", "none")
+    //   .attr("stroke", "#FF5533")
+    //   .attr("stroke-width", 2)
+    //   .attr("opacity", 0.6)
+    //   .style("filter", "url(#glow)")
+    //   .transition()
+    //   .duration(1500)
+    //   .attr("r", 12)
+    //   .attr("opacity", 0)
+    //   .ease(easeLinear)
+    //   .on("end", function () {
+    //     animationFrameRef.current = requestAnimationFrame(() => {
+    //       select(this)
+    //         .attr("r", 6)
+    //         .attr("opacity", 0.6)
+    //         .transition()
+    //         .duration(1500)
+    //         .attr("r", 12)
+    //         .attr("opacity", 0)
+    //         .ease(easeLinear)
+    //         .on("end", function () {
+    //           select(this).remove();
+    //         });
+    //     });
+    //   });
 
     // Main bank node
     bankNodes
@@ -382,12 +370,12 @@ export const GeoMap = ({
       .attr("stroke-width", 2)
       .style("cursor", "pointer")
       .on("mouseover", (event, bank) => {
-        // setHoveredBank(bank);
-        select(event.target).transition().duration(200).attr("r", (d: Bank) => d.isBranch ? 6 : 8);
+        setHoveredBank(bank);
+        select<any, Bank>(event.target).transition().duration(200).attr("r", (d: Bank) => d.isBranch ? 6 : 8);
       })
       .on("mouseout", (event) => {
-        // setHoveredBank(null);
-        select(event.target).transition().duration(200).attr("r", (d: Bank) => d.isBranch ? 4 : 6);
+        setHoveredBank(null);
+        select<any, Bank>(event.target).transition().duration(200).attr("r", (d: Bank) => d.isBranch ? 4 : 6);
       })
       .on("click", (_, bank) => {
         setSelectedBank(selectedBank?.code === bank.code ? null : bank);

@@ -1,8 +1,37 @@
-import { ApolloClient, InMemoryCache, ApolloProvider } from "@apollo/client";
+import { ApolloClient, InMemoryCache, ApolloProvider, split, HttpLink } from "@apollo/client";
+import { getMainDefinition } from '@apollo/client/utilities';
+import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
+import { createClient } from 'graphql-ws';
+
+import { WebSocketLink } from "@apollo/client/link/ws";
+import { createHttpLink } from "@apollo/client/link/http";
+
+const baseUrl = '3.133.157.24:8000';
+
+const httpLink = createHttpLink({
+  uri: `http://${baseUrl}/graphql`
+});
+
+const wsLink = new WebSocketLink({
+  uri : `ws://${baseUrl}/graphql`,
+});
+
+const splitLink = split(
+  ({ query }) => {
+    const definition = getMainDefinition(query);
+    return (
+      definition.kind === 'OperationDefinition' &&
+      definition.operation === 'subscription'
+    );
+  },
+  wsLink,
+  httpLink,
+);
 
 export const client = new ApolloClient({
-  uri: "http://3.133.157.24:8000/graphql", // Replace with your actual GraphQL endpoint
+  link: splitLink, // Replace with your actual GraphQL endpoint
   cache: new InMemoryCache(),
+  connectToDevTools: true,
 });
 
 export const GraphQLProvider: React.FC<{ children: React.ReactNode }> = ({

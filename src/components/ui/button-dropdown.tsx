@@ -42,11 +42,7 @@ export default function ButtonDropDown({
           sideOffset={4}
           align="end"
         >
-          <DropdownMenuRadioGroup
-            value={selectedIndex}
-            onValueChange={setSelectedIndex}
-          >
-            {options.map((option, index) => (
+          {options.map((option, index) => (
               <DropdownMenuRadioItem
                 key={option.label}
                 value={String(index)}
@@ -61,7 +57,6 @@ export default function ButtonDropDown({
                 </div>
               </DropdownMenuRadioItem>
             ))}
-          </DropdownMenuRadioGroup>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
