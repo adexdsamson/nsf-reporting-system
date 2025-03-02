@@ -25,10 +25,10 @@ const TransactionState = React.forwardRef<HTMLUListElement, TransactionStateProp
           <li
             key={state.status}
             className={cn(
-              "flex items-center gap-2 rounded-lg border border-slate-500 p-1 dark:border-slate-800",
+              "flex items-center gap-2 rounded-lg border border-red-400 p-1 dark:border-slate-800",
               state.isActive
-                ? "text-slate-50 dark:bg-slate-50 dark:text-slate-900"
-                : "border-slate-200 dark:border-slate-800"
+                ? "text-red-50 dark:bg-slate-50 dark:text-slate-900"
+                : "border-red-200 dark:border-slate-800"
             )}
           >
             <span
@@ -42,12 +42,12 @@ const TransactionState = React.forwardRef<HTMLUListElement, TransactionStateProp
               {state.icon}
             </span>
             <div>
-              <p className="text-sm font-medium">{state.status}</p>
+              <p className="text-sm font-medium ">{state.status}</p>
               <p
                 className={cn(
                   "text-xs",
                   state.isActive
-                    ? "text-slate-50/80 dark:text-slate-900/80"
+                    ? "text-red-50/80 dark:text-slate-900/80"
                     : "text-slate-950/80 dark:text-slate-50/80"
                 )}
               >

@@ -44,14 +44,10 @@ export const Login = () => {
         const transformedData = transformTransactionUpdateData(
           subscriptionQuery.data
         ) as TransactionData;
-        
-        if (
-          parseInt(transformedData?.overall_score) >= 10 ||
-          Array.isArray(transformedData) ||
-          typeof transformedData === "undefined"
-        )
-          return;
-        console.log({ transformedData, subscriptionQuery });
+
+        if (parseInt(transformedData?.overall_score) < 10) return;
+        if (Array.isArray(transformedData)) return;
+        if (typeof transformedData === "undefined") return;
 
         setTransaction(transformedData);
 
