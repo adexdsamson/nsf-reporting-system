@@ -81,22 +81,22 @@ export function convertToGremlinPath<T extends Record<string, any>>(response: T,
 export function convertGremlinPathToD3Tree(
   path: Record<string, string>[]
 ): any {
-  if (path.length === 0) return { name: "empty", children: [] };
+  if (path?.length === 0) return { name: "empty", children: [] };
 
   // Set the root name to the first transaction's ID
   const root = {
-    name: path[0]["<T.id: 1>"],
+    name: path?.[0]?.["<T.id: 1>"],
     children: [] as Record<string, any>[],
-    transaction: path[0],
+    transaction: path?.[0],
   };
 
   // Process each element in the path
-  for (let i = 0; i < path.length; i++) {
-    const item = path[i];
+  for (let i = 0; i < path?.length; i++) {
+    const item = path?.[i];
 
     // Only process node items (skip edges)
     if (item["<T.label: 4>"] === "processed_transaction") {
-      const nodeName = item["<T.id: 1>"];
+      const nodeName = item?.["<T.id: 1>"];
 
       // Skip nodes with undefined names
       if (!nodeName) continue;
@@ -110,10 +110,10 @@ export function convertGremlinPathToD3Tree(
 
       // Reference the next transaction if it exists
       if (
-        i + 1 < path.length &&
-        path[i + 1]["<T.label: 4>"] === "processed_transaction"
+        i + 1 < path?.length &&
+        path?.[i + 1]?.["<T.label: 4>"] === "processed_transaction"
       ) {
-        const nextNodeName = path[i + 1]["<T.id: 1>"];
+        const nextNodeName = path?.[i + 1]["<T.id: 1>"];
         treeNode.children.push({
           name: nextNodeName,
           size: 100,
@@ -139,7 +139,7 @@ export function convertGraphQLResponseToForceGraph<T extends Record<string, any>
   response: T,
   key: keyof T["data"]
 ): any {
-  const nodes = response.data?.[key]?.map((tx: any) => {
+  const nodes = response?.data?.[key]?.map((tx: any) => {
     const senderAccountNumber = tx.properties.find(
       (prop: any) => prop.key === "sender_account_number"
     )?.value;
@@ -154,9 +154,9 @@ export function convertGraphQLResponseToForceGraph<T extends Record<string, any>
     };
   });
 
-  const links = response.data.traceTransactionForward
-    .slice(1)
-    .map((tx: any, index: any) => {
+  const links = response?.data?.traceTransactionForward
+    ?.slice?.(1)
+    ?.map?.((tx: any, index: any) => {
       const previousSenderAccountNumber = response.data.traceTransactionForward[
         index
       ].properties.find((prop: any) => prop.key === "sender_account_number")?.value;

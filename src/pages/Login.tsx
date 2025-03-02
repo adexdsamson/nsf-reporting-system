@@ -15,6 +15,7 @@ import { TransactionData } from "@/types";
 import { TransactionState } from "@/components/ui/transaction-state";
 import { Clock } from "lucide-react";
 import { Globe } from "@/components/ui/globe";
+// import { GeoMap } from "@/components/layouts/GeoMap";
 
 function removeDuplicates<T>(array: T[], key: keyof T): T[] {
   const seen = new Set();
@@ -99,13 +100,10 @@ export const Login = () => {
           </div>
 
           {/* <GeoMap
-            data={data}
+            data={[]}
             property="pop_est"
-            defaultCountry={data.features.find(
-              (item) => item.properties.name === "Nigeria"
-            )}
-            transactions={transactions}
-            banks={BANKS}
+            
+            transactions={[]}
           /> */}
 
           <Globe

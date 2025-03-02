@@ -53,25 +53,29 @@ export const DashboardPage = () => {
 
   const transformedData = useMemo(() => {
     const allData = transformTransactionData(
-      data ?? defaultTransaction,
+      data as any,
       "transactions"
     ) as TransactionData[];
+
     const subData = transformTransactionUpdateData(
-      subscriptionQuery.data
+      subscriptionQuery?.data
     ) as TransactionData;
-    const combinedData = subData ? [...allData, subData] : allData;
-  
+
+    const combinedData = subData?.transaction_id ? [...allData, subData] : allData;
+    console.log('heloo', data?.transactions);
+    
     // Sort the combined data based on the timestamp
-    combinedData.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    combinedData.sort((a, b) => new Date(b?.timestamp).getTime() - new Date(a?.timestamp).getTime());
   
     return paginateData(
       combinedData,
       pagination.pageIndex,
       pagination.pageSize
     );
-  }, [data, pagination, subscriptionQuery.data]);
+  }, [data, pagination, subscriptionQuery?.data]);
 
   console.log({ transformedData });
+  
   
 
   const columns: ColumnDef<TransactionData>[] = [
@@ -96,7 +100,7 @@ export const DashboardPage = () => {
       header: "DATE",
       cell: ({ row }) => {
         const date = row.getValue("timestamp") as TransactionData["timestamp"];
-        return format(date, "do MMMM yyyy hh:mm aaa");
+        return format(date ?? '12/05/2024', "do MMMM yyyy hh:mm aaa");
       },
     },
     { accessorKey: "receiver_bank_name", header: "RECEIVER BANK" },

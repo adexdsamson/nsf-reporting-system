@@ -33,8 +33,8 @@ export const ForceGraph = ({ data }: ForceGraphProps) => {
 
     const color = d3.scaleOrdinal(d3.schemeCategory10);
 
-    const links = data.links.map((d) => ({ ...d }));
-    const nodes = data.nodes.map((d) => ({ ...d }));
+    const links = data?.links?.map?.((d) => ({ ...d })) ?? [];
+    const nodes = data?.nodes?.map?.((d) => ({ ...d })) ?? [];
 
     const svg = d3
       .select(svgRef.current)
