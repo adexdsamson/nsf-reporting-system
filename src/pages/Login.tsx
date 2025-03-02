@@ -43,14 +43,14 @@ export const Login = () => {
         const transformedData = transformTransactionUpdateData(
           subscriptionQuery.data
         ) as TransactionData;
-        console.log({ transformedData, subscriptionQuery });
-
+        
         if (
-          transformedData?.overall_score <= 70 ||
+          transformedData?.overall_score >= 10 ||
           Array.isArray(transformedData) ||
           typeof transformedData === "undefined"
         )
           return;
+        console.log({ transformedData, subscriptionQuery });
 
         setTransaction(transformedData);
 
@@ -115,18 +115,15 @@ export const Login = () => {
                 ? [
                     {
                       location: [
-                        // transaction?.sender_location?.latitude,
-                        // transaction?.sender_location?.longitude,
-
-                        6.4474, 3.3903,
+                        transaction?.sender_location?.latitude,
+                        transaction?.sender_location?.longitude,
                       ],
                       size: 10,
                     },
                     {
                       location: [
-                        // transaction?.receiver_location?.latitude,
-                        // transaction?.receiver_location?.longitude,
-                        6.4474, 3.3903
+                        transaction?.receiver_location?.latitude,
+                        transaction?.receiver_location?.longitude,
                       ],
                       size: 10,
                     },

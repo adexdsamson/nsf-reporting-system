@@ -82,9 +82,9 @@ export interface TransactionData {
   gift_card_provider: null | string;
   gift_card_currency: null | string;
   gift_card_transaction_id: null | string;
-  rule_score: number;
-  ai_score: null | number | string;
-  overall_score: number;
+  rule_score: string;
+  ai_score: null |  string;
+  overall_score: string;
 }
 
 export interface ReceiverLocation {

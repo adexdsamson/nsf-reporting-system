@@ -2,7 +2,7 @@ import { Card, CardContent } from "./card";
 
 interface ScoreCardProps {
   title: string;
-  score: number | string | null;
+  score: string;
   maxScore?: number;
   description: string;
 }
@@ -31,8 +31,8 @@ const ScoreCard = ({
     return (scoreValue / maxScore) * 360;
   };
 
-  const isValidScore = typeof score === 'number';
-  const scoreValue = isValidScore ? score : 0;
+  const isValidScore = !isNaN(parseInt(score));
+  const scoreValue = isValidScore ? parseInt(score) : 0;
 
   return (
     <Card className="p-6 h-full">

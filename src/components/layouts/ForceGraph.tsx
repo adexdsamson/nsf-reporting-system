@@ -94,7 +94,7 @@ export const ForceGraph = ({ data }: ForceGraphProps) => {
       .append("circle")
       .attr("fill", (d: any) => (d.children ? "#555" : "#999"))
       .attr("r", 2.5)
-      .on("mouseover", function (event, d) {
+      .on("mouseover", function (_, d) {
         const transaction = d?.data;
         console.log({ ds: transaction, });
         tooltip.transition().duration(200).style("opacity", 0.9);
@@ -109,8 +109,8 @@ export const ForceGraph = ({ data }: ForceGraphProps) => {
           <strong>Account Number:</strong> ${transaction?.sender_account_number}
         `
           )
-          .style("left", `${d.y + 10}px`)
-          .style("top", `${d.x}px`);
+          // .style("left", `${d.y + 10}px`)
+          // .style("top", `${d.x}px`);
       })
       .on("mouseout", () => {
         tooltip.transition().duration(500).style("opacity", 0);

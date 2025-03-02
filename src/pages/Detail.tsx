@@ -7,7 +7,6 @@ import {
 } from "@/lib/graphql/schema";
 import {
   transformSingleTransaction,
-  transformTransactionData,
 } from "@/lib/transforms/documentTransform";
 import {
   cn,
@@ -15,8 +14,6 @@ import {
   convertGremlinPathToD3Tree,
   convertToGremlinPath,
   getFormatCurrency,
-  parseGremlinOutput,
-  transformTransactions,
 } from "@/lib/utils";
 import { ApiResponseError, TransactionData } from "@/types";
 import { useQuery } from "@apollo/client";
@@ -40,7 +37,6 @@ import { ScoreCard } from "@/components/ui/score-card";
 import { useMutation } from "@tanstack/react-query";
 import { postRequest } from "@/lib/axiosInstance";
 import { useToastHandlers } from "@/hooks/useToaster";
-import { GraphqlTransactionData } from "@/demo";
 
 export const TransactionDetail = () => {
   const navigate = useNavigate();
@@ -94,7 +90,7 @@ export const TransactionDetail = () => {
     nextFetchPolicy: "cache-first", // Used for subsequent executions
   });
 
-  const transformedData = transformSingleTransaction(data) as TransactionData;
+  const transformedData = transformSingleTransaction(data) as TransactionData;  
 
   const backwardTracingQuery = useQuery(GET_BACKWARD_TRACING, {
     variables: {
@@ -117,20 +113,6 @@ export const TransactionDetail = () => {
     nextFetchPolicy: "cache-first", // Used for subsequent executions
     skip: !transformedData?.transaction_id,
   });
-
-  type BackwardTraceTransactionProps = {
-    traceTransactionBackward: TransactionData[];
-  };
-  type ForwardTraceTransactionProps = {
-    traceTransactionForward: TransactionData[];
-  };
-
-  const defaultForward: ForwardTraceTransactionProps = {
-    traceTransactionForward: [],
-  };
-  const defaultBackward: BackwardTraceTransactionProps = {
-    traceTransactionBackward: [],
-  };
 
   return (
     <div className="p-8 h-full w-full">
@@ -165,22 +147,14 @@ export const TransactionDetail = () => {
       ) : page === "backwardTrace" ? (
         <BackwardTraceContent
           {...{
-            // transactions:
-            //   transformTransactionData(
-            //     backwardTracingQuery.data ?? defaultBackward,
-            //     "traceTransactionBackward"
-            //   ) as TransactionData[],
-            transactions: GraphqlTransactionData,
+            transactions: backwardTracingQuery,
             goBack: () => setPage("details"),
           }}
         />
       ) : page === "forwardTrace" ? (
         <ForwardTraceContent
           {...{
-            transactions: transformTransactionData(
-              forwardTracingQuery.data ?? defaultForward,
-              "traceTransactionForward"
-            ),
+            transactions: forwardTracingQuery,
             goBack: () => setPage("details"),
           }}
         />
@@ -368,17 +342,17 @@ const TransactionContent = ({ transaction }: TransactionContentProps) => {
 
       <ScoreCard
         title="Rules Score"
-        score={transaction?.rule_score}
+        score={transaction?.rule_score ?? ''}
         description="A risk assessment score based on predefined security rules and transaction patterns. Ranges from 0-100, where higher scores indicate lower risk levels and better compliance with security policies."
       />
       <ScoreCard
         title="AI Score"
-        score={transaction?.ai_score}
+        score={transaction?.ai_score ?? ''}
         description="An advanced machine learning-based risk evaluation that analyzes transaction patterns, user behavior, and historical data. Scores range from 0-100, with higher scores suggesting legitimate transaction patterns."
       />
       <ScoreCard
         title="Overall Score"
-        score={transaction?.overall_score}
+        score={transaction?.overall_score ?? ''}
         description="A comprehensive risk assessment combining both rule-based and AI analysis. Scores above 70 indicate normal transactions, 40-70 suggest moderate risk requiring review, and below 40 may indicate potential fraud."
       />
 
@@ -632,15 +606,15 @@ type BackwardTraceContentProps<T> = {
   transactions: T;
 };
 
-const BackwardTraceContent = <T = unknown,>({
+const BackwardTraceContent = <T = unknown>({
   goBack,
   transactions,
 }: BackwardTraceContentProps<T>) => {
   const [activeGraph, setActiveGraph] = useState("2D");
 
-  const data = convertGraphQLResponseToForceGraph(transactions as any);
+  const data = convertGraphQLResponseToForceGraph(transactions as any, "traceTransactionBackward");
 
-  const gremilinString = convertToGremlinPath(transactions as any);
+  const gremilinString = convertToGremlinPath(transactions as any, "traceTransactionBackward");
   const treeData = convertGremlinPathToD3Tree(gremilinString);
 
 
@@ -667,105 +641,16 @@ const BackwardTraceContent = <T = unknown,>({
 
 type ForwardTraceContentProps = {
   goBack: () => void;
+  transactions: any;
 };
 
-const ForwardTraceContent = ({ goBack }: ForwardTraceContentProps) => {
+const ForwardTraceContent = ({ goBack, transactions }: ForwardTraceContentProps) => {
   const [activeGraph, setActiveGraph] = useState("2D");
 
-  const data = {
-    nodes: [
-      { id: "node1", label: "Project A", group: 1 },
-      { id: "node2", label: "Project B", group: 2 },
-      { id: "node3", label: "Project C", group: 1 },
-      { id: "node4", label: "Project D", group: 2 },
-      { id: "node5", label: "Project E", group: 1 },
-    ],
-    links: [
-      { source: "node1", target: "node2" },
-      { source: "node2", target: "node3" },
-      { source: "node3", target: "node4" },
-      { source: "node1", target: "node5" },
-      { source: "node5", target: "node3" },
-    ],
-  };
+  const data = convertGraphQLResponseToForceGraph(transactions as any, "traceTransactionForward");
 
-  const treeData = {
-    name: "flare",
-    children: [
-      {
-        name: "analytics",
-        children: [
-          { name: "cluster", size: 123 },
-          { name: "graph", size: 123 },
-          { name: "optimization", size: 123 },
-        ],
-      },
-      {
-        name: "animate",
-        children: [
-          { name: "cluster", size: 123 },
-          { name: "graph", size: 123 },
-          { name: "optimization", size: 123 },
-        ],
-      },
-      {
-        name: "data",
-        children: [
-          { name: "cluster", size: 123 },
-          { name: "graph", size: 123 },
-          { name: "optimization", size: 123 },
-        ],
-      },
-      {
-        name: "display",
-        children: [
-          { name: "cluster", size: 123 },
-          { name: "graph", size: 123 },
-          { name: "optimization", size: 123 },
-        ],
-      },
-      {
-        name: "flex",
-        children: [
-          { name: "cluster", size: 123 },
-          { name: "graph", size: 123 },
-          { name: "optimization", size: 123 },
-        ],
-      },
-      {
-        name: "physics",
-        children: [
-          { name: "cluster", size: 123 },
-          { name: "graph", size: 123 },
-          { name: "optimization", size: 123 },
-        ],
-      },
-      {
-        name: "query",
-        children: [
-          { name: "cluster", size: 123 },
-          { name: "graph", size: 123 },
-          { name: "optimization", size: 123 },
-        ],
-      },
-      {
-        name: "scale",
-        children: [
-          { name: "cluster", size: 123 },
-          { name: "graph", size: 123 },
-          { name: "optimization", size: 123 },
-        ],
-      },
-      {
-        name: "util",
-        children: [
-          { name: "cluster", size: 123 },
-          { name: "graph", size: 123 },
-          { name: "optimization", size: 123 },
-        ],
-      },
-    ],
-  };
+  const gremilinString = convertToGremlinPath(transactions as any, "traceTransactionForward");
+  const treeData = convertGremlinPathToD3Tree(gremilinString);
 
   return (
     <>

@@ -25,11 +25,6 @@ type GraphQLTransaction = {
   __typename: string;
 };
 
-interface GraphQLResponse {
-  data: {
-    traceTransactionForward: GraphQLTransaction[];
-  };
-}
 
 // Convert a single transaction into a Gremlin node object
 function convertTransactionToNode(tx: GraphQLTransaction): Record<string, any> {
@@ -62,8 +57,8 @@ function convertTransactionToNode(tx: GraphQLTransaction): Record<string, any> {
  * @param response - The original GraphQL response.
  * @returns An array representing the Gremlin path.
  */
-export function convertToGremlinPath(response: GraphQLResponse): any[] {
-  const txs = response?.data?.traceTransactionForward;
+export function convertToGremlinPath<T extends Record<string, any>>(response: T, key: T['data']): any[] {
+  const txs = response?.data?.[key];
   if (!txs || !txs.length) return [];
 
   const path: any[] = [];
@@ -140,29 +135,40 @@ export function convertGremlinPathToD3Tree(
  * @param response - The GraphQL response to convert.
  * @returns An object representing the force graph data.
  */
-export function convertGraphQLResponseToForceGraph(response: GraphQLResponse): any {
-  const nodes = response.data.traceTransactionForward.map((tx) => {
-    const senderAccountNumber = tx.properties.find(prop => prop.key === "sender_account_number")?.value;
+export function convertGraphQLResponseToForceGraph<T extends Record<string, any>>(
+  response: T,
+  key: keyof T["data"]
+): any {
+  const nodes = response.data?.[key]?.map((tx: any) => {
+    const senderAccountNumber = tx.properties.find(
+      (prop: any) => prop.key === "sender_account_number"
+    )?.value;
     return {
       id: senderAccountNumber,
       label: senderAccountNumber,
       group: 1, // Assign a group number for color coding if needed
-      data: tx.properties.reduce((acc, prop) => {
+      data: tx.properties.reduce((acc: any, prop: any) => {
         acc[prop.key] = prop.value;
         return acc;
-      }, {} as any)
+      }, {} as any),
     };
   });
 
-  const links = response.data.traceTransactionForward.slice(1).map((tx, index) => {
-    const previousSenderAccountNumber = response.data.traceTransactionForward[index].properties.find(prop => prop.key === "sender_account_number")?.value;
-    const currentSenderAccountNumber = tx.properties.find(prop => prop.key === "sender_account_number")?.value;
-    return {
-      source: previousSenderAccountNumber,
-      target: currentSenderAccountNumber,
-      value: 1 // Assign a default value for link width if needed
-    };
-  });
+  const links = response.data.traceTransactionForward
+    .slice(1)
+    .map((tx: any, index: any) => {
+      const previousSenderAccountNumber = response.data.traceTransactionForward[
+        index
+      ].properties.find((prop: any) => prop.key === "sender_account_number")?.value;
+      const currentSenderAccountNumber = tx.properties.find(
+        (prop: any) => prop.key === "sender_account_number"
+      )?.value;
+      return {
+        source: previousSenderAccountNumber,
+        target: currentSenderAccountNumber,
+        value: 1, // Assign a default value for link width if needed
+      };
+    });
 
   return { nodes, links };
 }

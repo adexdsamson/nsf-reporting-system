@@ -131,10 +131,10 @@ export const DashboardPage = () => {
         return (
           <span
             className={`px-2.5 py-1.5 rounded-lg text-xs font-medium ${getStatusColor(
-              score <= 40 ? "LOW" : score <= 60 ? "MEDIUM" : "HIGH"
+              parseInt(score) <= 40 ? "LOW" : parseInt(score) <= 60 ? "MEDIUM" : "HIGH"
             )}`}
           >
-            {score <= 40 ? "LOW" : score <= 60 ? "MEDIUM" : "HIGH"}
+            {parseInt(score) <= 40 ? "LOW" : parseInt(score) <= 60 ? "MEDIUM" : "HIGH"}
           </span>
         );
       },
