@@ -45,7 +45,7 @@ export const Login = () => {
         ) as TransactionData;
         
         if (
-          transformedData?.overall_score >= 10 ||
+          parseInt(transformedData?.overall_score) >= 10 ||
           Array.isArray(transformedData) ||
           typeof transformedData === "undefined"
         )

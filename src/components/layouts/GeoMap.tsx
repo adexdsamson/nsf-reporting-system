@@ -1,11 +1,8 @@
-import { forwardRef, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   select,
   geoPath,
   geoMercator,
-  min,
-  max,
-  scaleLinear,
   easeLinear,
 } from "d3";
 import { useResizeObserver } from "usehooks-ts";

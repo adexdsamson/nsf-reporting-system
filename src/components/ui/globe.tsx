@@ -30,7 +30,7 @@ export function Globe({
 }) {
   let phi = 0;
   let width = 0;
-  const focusRef = useRef([0, 0]);
+  // const focusRef = useRef([0, 0]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const pointerInteracting = useRef<number | null>(null);
   const pointerInteractionMovement = useRef(0);
@@ -45,19 +45,19 @@ export function Globe({
     },
   }));
 
-  const drawArc = (
-    ctx: CanvasRenderingContext2D,
-    from: number[],
-    to: number[],
-    color: string
-  ) => {
-    ctx.beginPath();
-    ctx.moveTo(from[0], from[1]);
-    ctx.lineTo(to[0], to[1]);
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 2;
-    ctx.stroke();
-  };
+  // const drawArc = (
+  //   ctx: CanvasRenderingContext2D,
+  //   from: number[],
+  //   to: number[],
+  //   color: string
+  // ) => {
+  //   ctx.beginPath();
+  //   ctx.moveTo(from[0], from[1]);
+  //   ctx.lineTo(to[0], to[1]);
+  //   ctx.strokeStyle = color;
+  //   ctx.lineWidth = 2;
+  //   ctx.stroke();
+  // };
 
   const onRender = useCallback(
     (state: Record<string, any>) => {

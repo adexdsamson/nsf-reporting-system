@@ -4,12 +4,10 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDownIcon } from "lucide-react";
-import { useState } from "react";
 
 
 export default function ButtonDropDown({
@@ -19,7 +17,6 @@ export default function ButtonDropDown({
   options: { label: string; description: string; onClick?: () => void }[];
   children: React.ReactNode;
 }) {
-  const [selectedIndex, setSelectedIndex] = useState("0");
 
   return (
     <div className="divide-primary-foreground/30 inline-flex divide-x rounded-md shadow-xs rtl:space-x-reverse">

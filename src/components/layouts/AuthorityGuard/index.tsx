@@ -1,11 +1,11 @@
-import { Navigate } from "react-router-dom";
+// import { Navigate } from "react-router-dom";
 import { ReactNode } from "react";
-import { useAuthentication } from "@/hooks/useAuthentication";
+// import { useAuthentication } from "@/hooks/useAuthentication";
 // import { useUserAuthority } from "@/hooks/useUserAuthority";
 
 type AuthorityGuard = { children: ReactNode };
 
-// const pageIdentity = {
+// const pageIdentity = 
 //   "/dashboard/home": "dashboard",
 //   "/dashboard/functions": "function",
 //   "/dashboard/transaction-log": "transaction",
@@ -21,7 +21,7 @@ const AuthorityGuard = (props: AuthorityGuard) => {
   const { children } = props;
   // const location = useLocation();
 
-  const isAuthenticated = useAuthentication();
+  // const isAuthenticated = useAuthentication();
 
   // if (!isAuthenticated) {
   //   return <Navigate to="/" />;

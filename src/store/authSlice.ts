@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist, combine, PersistOptions } from "zustand/middleware";
+import { combine } from "zustand/middleware";
 import {
   createSelectorHooks,
   ZustandHookSelectors,
@@ -42,9 +42,9 @@ const reducer = combine(initialState, (set) => ({
   },
 }));
 
-const logger = (config) => (set, get, api) => {
+const logger = (config: any) => (set: any, get: any, api: any) => {
   return config(
-    (args) => {
+    (args: any) => {
       // console.log("studio  applying", args);
       set(args);
       // console.log("studio  new state", get());
@@ -56,9 +56,9 @@ const logger = (config) => (set, get, api) => {
 
 type Selectors = InitialState & Actions;
 
-const persistConfig: PersistOptions<Selectors> = {
-  name: "auth",
-};
+// const persistConfig: PersistOptions<Selectors> = {
+//   name: "auth",
+// };
 
 const baseReducer = create(logger(reducer));
 // const baseReducer = create(persist(reducer, persistConfig));

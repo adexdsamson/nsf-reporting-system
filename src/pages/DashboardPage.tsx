@@ -24,14 +24,7 @@ export const DashboardPage = () => {
     pageSize: 10,
   });
 
-  const { loading, data } = useQuery(GET_ALL_TRANSACTIONS, {
-    onCompleted: (data) => {
-      // console.log(
-      //   "Transformed transactions data:",
-      //   transformTransactionData(data)
-      // );
-    },
-  });
+  const { loading, data } = useQuery(GET_ALL_TRANSACTIONS);
 
   // Replace the query with subscription
   const subscriptionQuery = useSubscription(SUBSCRIBE_TO_TRANSACTION, {

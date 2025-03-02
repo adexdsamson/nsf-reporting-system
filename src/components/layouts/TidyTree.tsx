@@ -68,7 +68,7 @@ export const TidyTree = ({ data }: TidyTreeProps) => {
     const g = svg.append("g");
 
     // Create links
-    const link = g
+    g
       .append("g")
       .attr("fill", "none")
       .attr("stroke", "#555")
@@ -111,7 +111,7 @@ export const TidyTree = ({ data }: TidyTreeProps) => {
       .append("circle")
       .attr("fill", (d: any) => (d.children ? "#555" : "#999"))
       .attr("r", 2.5)
-      .on("mouseover", function (event, d) {
+      .on("mouseover", function (_, d) {
         const transaction = d.data.transaction;
         tooltip.transition().duration(200).style("opacity", 0.9);
         tooltip
@@ -159,7 +159,7 @@ export const TidyTree = ({ data }: TidyTreeProps) => {
             `translate(${d.y},${d.x})`
           );
         })
-        .on("end", (event, d: any) => {
+        .on("end", (_, d: any) => {
           d.fx = null;
           d.fy = null;
         }) as any
