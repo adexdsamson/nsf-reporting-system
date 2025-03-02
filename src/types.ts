@@ -67,10 +67,10 @@ export interface TransactionData {
   sortcode_bank_location: null | string;
   transfer_type: null | string;
   transfer_session_id: null | string;
-  receiver_bank_account_number: number;
+  receiver_account_number: number;
   receiver_bank_code: string;
   receiver_bank_name: string;
-  receiver_name: string;
+  receiver_account_name: string;
   wallet_id: null | string;
   wallet_balance_before: null | string;
   wallet_balance_after: null | string;

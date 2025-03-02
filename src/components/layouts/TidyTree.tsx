@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import * as d3 from "d3";
 import { useResizeObserver } from "usehooks-ts";
+import { format } from "date-fns";
 
 type TidyTreeProps = {
   data: any;
@@ -54,7 +55,8 @@ export const TidyTree = ({ data }: TidyTreeProps) => {
       .attr("class", "bg-slate-900 rounded-lg");
 
     // Add zoom functionality
-    const zoom = d3.zoom()
+    const zoom = d3
+      .zoom()
       .scaleExtent([0.1, 4]) // Set the zoom scale limits
       .on("zoom", (event) => {
         g.attr("transform", event.transform); // Apply the zoom transformation
@@ -77,8 +79,22 @@ export const TidyTree = ({ data }: TidyTreeProps) => {
       .join("path")
       .attr(
         "d",
-        d3.linkHorizontal().x((d: any) => d.y).y((d: any) => d.x) as any
+        d3
+          .linkHorizontal()
+          .x((d: any) => d.y)
+          .y((d: any) => d.x) as any
       );
+
+    const tooltip = d3
+      .select(wrapperRef.current)
+      .append("div")
+      .style("position", "absolute")
+      .style("background-color", "white")
+      .style("border", "1px solid #ccc")
+      .style("padding", "5px")
+      .style("border-radius", "3px")
+      .style("pointer-events", "none")
+      .style("opacity", 0);
 
     // Create nodes
     const node = g
@@ -94,7 +110,27 @@ export const TidyTree = ({ data }: TidyTreeProps) => {
     node
       .append("circle")
       .attr("fill", (d: any) => (d.children ? "#555" : "#999"))
-      .attr("r", 2.5);
+      .attr("r", 2.5)
+      .on("mouseover", function (event, d) {
+        const transaction = d.data.transaction;
+        tooltip.transition().duration(200).style("opacity", 0.9);
+        tooltip
+          .html(
+            `
+          <strong>Bank Name:</strong> ${transaction?.bank_name}<br/>
+          <strong>Timestamp:</strong> ${format(
+            transaction?.timestamp,
+            "do MMMM yyyy hh:mm aaa"
+          )}<br/>
+          <strong>Account Number:</strong> ${transaction?.sender_account_number}
+        `
+          )
+          // .style("left", `${d.y + 10}px`)
+          // .style("top", `${d.x}px`);
+      })
+      .on("mouseout", () => {
+        tooltip.transition().duration(500).style("opacity", 0);
+      });
 
     // Add text labels
     node
@@ -108,7 +144,8 @@ export const TidyTree = ({ data }: TidyTreeProps) => {
 
     // Add dragging behavior
     node.call(
-      d3.drag()
+      d3
+        .drag()
         .on("start", (event, d: any) => {
           event.sourceEvent.stopPropagation();
           d.fx = d.x;
@@ -117,8 +154,10 @@ export const TidyTree = ({ data }: TidyTreeProps) => {
         .on("drag", (event, d: any) => {
           d.fx = event.y;
           d.fy = event.x;
-          d3.select(event.sourceEvent.target.parentNode)
-            .attr("transform", `translate(${d.y},${d.x})`);
+          d3.select(event.sourceEvent.target.parentNode).attr(
+            "transform",
+            `translate(${d.y},${d.x})`
+          );
         })
         .on("end", (event, d: any) => {
           d.fx = null;
@@ -129,7 +168,7 @@ export const TidyTree = ({ data }: TidyTreeProps) => {
 
   return (
     <div ref={wrapperRef} className="w-full h-full">
-      <svg ref={svgRef}  />
+      <svg ref={svgRef} />
     </div>
   );
 };

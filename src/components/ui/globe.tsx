@@ -9,7 +9,7 @@ const GLOBE_CONFIG: COBEOptions = {
   height: 800,
   onRender: () => {},
   devicePixelRatio: 2,
-  phi: 3.3792, // Longitude of Lagos
+  phi: 0, // Longitude of Lagos
   theta: 0.113, // Adjusted for latitude of Lagos
   dark: 1,
   diffuse: 0.0,
@@ -28,6 +28,7 @@ export function Globe({
   className?: string;
   config?: Partial<COBEOptions>;
 }) {
+  let phi = 0;
   let width = 0;
   const focusRef = useRef([0, 0]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -76,11 +77,13 @@ export function Globe({
       //   drawArc(ctx, from, to, "orange");
       // }
 
-      state.phi = r.get();
+      // state.phi = r.get();
+      state.phi = phi;
+      phi += 0.005
       state.width = width * 2;
       state.height = width * 2;
     },
-    [r, config.markers]
+    [r]
   );
 
   const onResize = useCallback(() => {

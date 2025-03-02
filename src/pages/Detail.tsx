@@ -9,7 +9,15 @@ import {
   transformSingleTransaction,
   transformTransactionData,
 } from "@/lib/transforms/documentTransform";
-import { cn, getFormatCurrency } from "@/lib/utils";
+import {
+  cn,
+  convertGraphQLResponseToForceGraph,
+  convertGremlinPathToD3Tree,
+  convertToGremlinPath,
+  getFormatCurrency,
+  parseGremlinOutput,
+  transformTransactions,
+} from "@/lib/utils";
 import { ApiResponseError, TransactionData } from "@/types";
 import { useQuery } from "@apollo/client";
 import { format } from "date-fns";
@@ -32,6 +40,7 @@ import { ScoreCard } from "@/components/ui/score-card";
 import { useMutation } from "@tanstack/react-query";
 import { postRequest } from "@/lib/axiosInstance";
 import { useToastHandlers } from "@/hooks/useToaster";
+import { GraphqlTransactionData } from "@/demo";
 
 export const TransactionDetail = () => {
   const navigate = useNavigate();
@@ -91,8 +100,7 @@ export const TransactionDetail = () => {
     variables: {
       depth: 3,
       timestamp: transformedData?.timestamp,
-      accountNumber:
-        transformedData?.receiver_bank_account_number?.toString?.(),
+      accountNumber: transformedData?.receiver_account_number?.toString?.(),
     },
     fetchPolicy: "network-only", // Used for first execution
     nextFetchPolicy: "cache-first", // Used for subsequent executions
@@ -157,11 +165,12 @@ export const TransactionDetail = () => {
       ) : page === "backwardTrace" ? (
         <BackwardTraceContent
           {...{
-            transactions:
-              transformTransactionData(
-                backwardTracingQuery.data ?? defaultBackward,
-                "traceTransactionBackward"
-              ) as TransactionData[],
+            // transactions:
+            //   transformTransactionData(
+            //     backwardTracingQuery.data ?? defaultBackward,
+            //     "traceTransactionBackward"
+            //   ) as TransactionData[],
+            transactions: GraphqlTransactionData,
             goBack: () => setPage("details"),
           }}
         />
@@ -292,7 +301,6 @@ type TransactionContentProps = {
 
 const TransactionContent = ({ transaction }: TransactionContentProps) => {
   const formatted = getFormatCurrency(transaction?.transaction_amount ?? 0);
-  console.log({ transaction });
 
   return (
     <div className="my-10 pb-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -447,7 +455,7 @@ const TransactionContent = ({ transaction }: TransactionContentProps) => {
         <div className="grid grid-cols-2 items-start lg:grid-cols-3 gap-10 px-4">
           <ContentItem
             title="Receiver Name"
-            value={transaction?.receiver_name ?? "--"}
+            value={transaction?.receiver_account_name ?? "--"}
           />
 
           <ContentItem
@@ -456,9 +464,7 @@ const TransactionContent = ({ transaction }: TransactionContentProps) => {
           />
           <ContentItem
             title="Receiver Account"
-            value={
-              transaction?.receiver_bank_account_number?.toString?.() ?? "--"
-            }
+            value={transaction?.receiver_account_number?.toString?.() ?? "--"}
           />
           <ContentItem
             title="Receiver coordinate (Latitude)"
@@ -621,125 +627,22 @@ const TransactionContent = ({ transaction }: TransactionContentProps) => {
   );
 };
 
-type BackwardTraceContentProps = {
+type BackwardTraceContentProps<T> = {
   goBack: () => void;
-  transactions: TransactionData[];
+  transactions: T;
 };
 
-const BackwardTraceContent = ({
+const BackwardTraceContent = <T = unknown,>({
   goBack,
   transactions,
-}: BackwardTraceContentProps) => {
+}: BackwardTraceContentProps<T>) => {
   const [activeGraph, setActiveGraph] = useState("2D");
 
-  const data = {
-    nodes:
-      transactions.map((item) => ({
-        id: item.receiver_bank_account_number,
-        label: item.receiver_bank_name,
-        group: item.receiver_bank_name,
-      })) ?? [],
-    links:
-      transactions.slice(0, -1).map((item, index) => ({
-        source: item.receiver_bank_account_number,
-        target: transactions[index + 1].receiver_bank_account_number,
-      })) ?? [],
-  };
+  const data = convertGraphQLResponseToForceGraph(transactions as any);
 
-  // {
-  //   nodes: [
-  //     { id: "node1", label: "Project A", group: 1 },
-  //     { id: "node2", label: "Project B", group: 2 },
-  //     { id: "node3", label: "Project C", group: 1 },
-  //     { id: "node4", label: "Project D", group: 2 },
-  //     { id: "node5", label: "Project E", group: 1 },
-  //   ],
-  //   links: [
-  //     { source: "node1", target: "node2" },
-  //     { source: "node2", target: "node3" },
-  //     { source: "node3", target: "node4" },
-  //     { source: "node1", target: "node5" },
-  //     { source: "node5", target: "node3" },
-  //   ],
-  // };
+  const gremilinString = convertToGremlinPath(transactions as any);
+  const treeData = convertGremlinPathToD3Tree(gremilinString);
 
-  const treeData = {
-    name: "flare",
-    children: [
-      {
-        name: "analytics",
-        children: [
-          { name: "cluster", size: 123 },
-          { name: "graph", size: 123 },
-          { name: "optimization", size: 123 },
-        ],
-      },
-      {
-        name: "animate",
-        children: [
-          { name: "cluster", size: 123 },
-          { name: "graph", size: 123 },
-          { name: "optimization", size: 123 },
-        ],
-      },
-      {
-        name: "data",
-        children: [
-          { name: "cluster", size: 123 },
-          { name: "graph", size: 123 },
-          { name: "optimization", size: 123 },
-        ],
-      },
-      {
-        name: "display",
-        children: [
-          { name: "cluster", size: 123 },
-          { name: "graph", size: 123 },
-          { name: "optimization", size: 123 },
-        ],
-      },
-      {
-        name: "flex",
-        children: [
-          { name: "cluster", size: 123 },
-          { name: "graph", size: 123 },
-          { name: "optimization", size: 123 },
-        ],
-      },
-      {
-        name: "physics",
-        children: [
-          { name: "cluster", size: 123 },
-          { name: "graph", size: 123 },
-          { name: "optimization", size: 123 },
-        ],
-      },
-      {
-        name: "query",
-        children: [
-          { name: "cluster", size: 123 },
-          { name: "graph", size: 123 },
-          { name: "optimization", size: 123 },
-        ],
-      },
-      {
-        name: "scale",
-        children: [
-          { name: "cluster", size: 123 },
-          { name: "graph", size: 123 },
-          { name: "optimization", size: 123 },
-        ],
-      },
-      {
-        name: "util",
-        children: [
-          { name: "cluster", size: 123 },
-          { name: "graph", size: 123 },
-          { name: "optimization", size: 123 },
-        ],
-      },
-    ],
-  };
 
   return (
     <>
