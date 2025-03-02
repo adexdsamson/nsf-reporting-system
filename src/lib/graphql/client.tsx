@@ -11,7 +11,7 @@ const httpLink = createHttpLink({
 });
 
 const wsLink = new WebSocketLink({
-  uri : `ws://${baseUrl}/graphql`,
+  uri : `wss://${baseUrl}/graphql`,
 });
 
 const splitLink = split(
