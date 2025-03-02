@@ -6,7 +6,7 @@ import {
   Ref,
 } from "react";
 
-type ContainerProps = {
+type ContainerProps = Record<string, any> & {
   as?:
     | ComponentElement
     | HTMLElementTagNameMap
