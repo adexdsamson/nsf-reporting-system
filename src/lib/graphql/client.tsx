@@ -4,10 +4,10 @@ import { getMainDefinition } from '@apollo/client/utilities';
 import { WebSocketLink } from "@apollo/client/link/ws";
 import { createHttpLink } from "@apollo/client/link/http";
 
-const baseUrl = '3.133.157.24:8000';
+const baseUrl = 'nfs-demo.mygrantgenie.com';
 
 const httpLink = createHttpLink({
-  uri: `http://${baseUrl}/graphql`
+  uri: `https://${baseUrl}/graphql`
 });
 
 const wsLink = new WebSocketLink({
