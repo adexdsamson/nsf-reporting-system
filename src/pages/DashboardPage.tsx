@@ -3,19 +3,18 @@ import { Input } from "@/components/ui/input";
 import { DataTable } from "@/components/layouts/DataTable";
 import { ColumnDef, PaginationState } from "@tanstack/react-table";
 import { BarChart2, Settings2, Download, ChevronRight } from "lucide-react";
-import { TransactionData } from "@/types";
-import { useQuery, useSubscription } from "@apollo/client";
-import {
-  GET_ALL_TRANSACTIONS,
-  SUBSCRIBE_TO_TRANSACTION,
-} from "@/lib/graphql/schema";
-import {
-  transformTransactionData,
-  transformTransactionUpdateData,
-} from "@/lib/transforms/documentTransform";
+import { ApiResponse, ApiResponseError, TransactionItem } from "@/types";
+// import { useQuery, useSubscription } from "@apollo/client";
+// import {
+//   GET_ALL_TRANSACTIONS,
+//   SUBSCRIBE_TO_TRANSACTION,
+// } from "@/lib/graphql/schema";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
-import { useMemo, useState } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { getRequest } from "@/lib/axiosInstance";
+
 
 export const DashboardPage = () => {
   const navigate = useNavigate();
@@ -24,69 +23,71 @@ export const DashboardPage = () => {
     pageSize: 10,
   });
 
-  const { loading, data } = useQuery(GET_ALL_TRANSACTIONS);
+  // const { loading, data } = useQuery(GET_ALL_TRANSACTIONS);
+  const { isLoading, data } = useQuery<ApiResponse<TransactionItem[]>, ApiResponseError>({
+    queryKey: ["transactions"],
+    queryFn: async () => await getRequest("transactions"),
+  })
 
   // Replace the query with subscription
-  const subscriptionQuery = useSubscription(SUBSCRIBE_TO_TRANSACTION, {
-    onData: ({ data }) => {
-      console.log(
-        "Subscription data received!",
-        transformTransactionUpdateData(data?.data)
-      );
-    },
-    skip: !data?.transactions,
-  });
+  // const subscriptionQuery = useSubscription(SUBSCRIBE_TO_TRANSACTION, {
+  //   onData: ({ data }) => {
+  //     console.log(
+  //       "Subscription data received!",
+  //       transformTransactionUpdateData(data?.data)
+  //     );
+  //   },
+  //   skip: !data?.transactions,
+  // });
 
-  const paginateData = (
-    data: TransactionData[],
-    pageIndex: number,
-    pageSize: number
-  ) => {
-    const start = pageIndex * pageSize;
-    const end = start + pageSize;
-    return data.slice(start, end);
-  };
+  // const paginateData = (
+  //   data: TransactionData[],
+  //   pageIndex: number,
+  //   pageSize: number
+  // ) => {
+  //   const start = pageIndex * pageSize;
+  //   const end = start + pageSize;
+  //   return data.slice(start, end);
+  // };
 
-  const defaultTransaction: { transactions: TransactionData[] } = {
-    transactions: [],
-  };
+  // const defaultTransaction: { transactions: TransactionData[] } = {
+  //   transactions: [],
+  // };
 
-  const transformedData = useMemo(() => {
-    const allData = transformTransactionData(
-      data as any,
-      "transactions"
-    ) as TransactionData[];
+  // const transformedData = useMemo(() => {
+  //   const allData = transformTransactionData(
+  //     data as any,
+  //     "transactions"
+  //   ) as TransactionData[];
 
-    const subData = transformTransactionUpdateData(
-      subscriptionQuery?.data
-    ) as TransactionData;
+  //   // const subData = transformTransactionUpdateData(
+  //   //   subscriptionQuery?.data
+  //   // ) as TransactionData;
 
-    const combinedData = subData?.transaction_id ? [...allData, subData] : allData;
-    console.log('heloo', data?.transactions);
+  //   const combinedData = subData?.transaction_id ? [...allData, subData] : allData;
+  //   console.log('heloo', data?.transactions);
     
-    // Sort the combined data based on the timestamp
-    combinedData.sort((a, b) => new Date(b?.timestamp).getTime() - new Date(a?.timestamp).getTime());
+  //   // Sort the combined data based on the timestamp
+  //   combinedData.sort((a, b) => new Date(b?.timestamp).getTime() - new Date(a?.timestamp).getTime());
   
-    return paginateData(
-      combinedData,
-      pagination.pageIndex,
-      pagination.pageSize
-    );
-  }, [data, pagination, subscriptionQuery?.data]);
+  //   return paginateData(
+  //     combinedData,
+  //     pagination.pageIndex,
+  //     pagination.pageSize
+  //   );
+  // }, [data, pagination]);
 
-  console.log({ transformedData });
-  
-  
+  const transformedData = data?.data;
 
-  const columns: ColumnDef<TransactionData>[] = [
-    { accessorKey: "transaction_id", header: "ID" },
-    { accessorKey: "sender_account_name", header: "SENDER" },
-    { accessorKey: "transaction_type", header: "TRANSACTION TYPE" },
+  const columns: ColumnDef<TransactionItem>[] = [
+    { accessorKey: "id", header: "ID" },
+    { accessorKey: "root_transaction_id", header: "ROOT Transaction ID" },
+    { accessorKey: "total_transactions", header: "TOTAL TRANSACTIONS" },
     {
-      accessorKey: "transaction_amount",
-      header: "AMOUNT",
+      accessorKey: "total_amount",
+      header: "TOTAL AMOUNT",
       cell: ({ row }) => {
-        const amount = parseFloat(row.getValue("transaction_amount"));
+        const amount = parseFloat(row.getValue("total_amount"));
         const formatted = new Intl.NumberFormat("en-NG", {
           style: "currency",
           currency: "NGN",
@@ -94,49 +95,49 @@ export const DashboardPage = () => {
         return formatted;
       },
     },
-    { accessorKey: "state", header: "STATE" },
+    { accessorKey: "status", header: "STATUS" },
     {
-      accessorKey: "timestamp",
+      accessorKey: "created_at",
       header: "DATE",
       cell: ({ row }) => {
-        const date = row.getValue("timestamp") as TransactionData["timestamp"];
+        const date = row.getValue("created_at") as TransactionItem["created_at"];
         return format(date ?? '12/05/2024', "do MMMM yyyy hh:mm aaa");
       },
     },
-    { accessorKey: "receiver_bank_name", header: "RECEIVER BANK" },
-    {
-      accessorKey: "overall_score",
-      header: "OVERALL SCORE",
-      cell: ({ row }) => {
-        const score = row.getValue(
-          "overall_score"
-        ) as TransactionData["overall_score"];
+    // { accessorKey: "receiver_bank_name", header: "RECEIVER BANK" },
+    // {
+    //   accessorKey: "overall_score",
+    //   header: "OVERALL SCORE",
+    //   cell: ({ row }) => {
+    //     const score = row.getValue(
+    //       "overall_score"
+    //     ) as TransactionData["overall_score"];
 
-        const getStatusColor = (status?: string) => {
-          switch (status) {
-            case "MEDIUM":
-              return "text-amber-600 bg-amber-100";
-            case "LOW":
-              return "text-emerald-600 bg-emerald-100";
-            case "HIGH":
-              return "text-red-600 bg-red-100";
-            default:
-              return "text-gray-600 bg-gray-100";
-          }
-        };
+    //     const getStatusColor = (status?: string) => {
+    //       switch (status) {
+    //         case "MEDIUM":
+    //           return "text-amber-600 bg-amber-100";
+    //         case "LOW":
+    //           return "text-emerald-600 bg-emerald-100";
+    //         case "HIGH":
+    //           return "text-red-600 bg-red-100";
+    //         default:
+    //           return "text-gray-600 bg-gray-100";
+    //       }
+    //     };
 
-        return (
-          <span
-            className={`px-2.5 py-1.5 rounded-lg text-xs font-medium ${getStatusColor(
-              parseInt(score) <= 40 ? "LOW" : parseInt(score) <= 60 ? "MEDIUM" : "HIGH"
-            )}`}
-          >
-            {parseInt(score) <= 40 ? "LOW" : parseInt(score) <= 60 ? "MEDIUM" : "HIGH"}
-          </span>
-        );
-      },
-    },
-    { accessorKey: "transfer_type", header: "TRANSFER TYPE" },
+    //     return (
+    //       <span
+    //         className={`px-2.5 py-1.5 rounded-lg text-xs font-medium ${getStatusColor(
+    //           parseInt(score) <= 40 ? "LOW" : parseInt(score) <= 60 ? "MEDIUM" : "HIGH"
+    //         )}`}
+    //       >
+    //         {parseInt(score) <= 40 ? "LOW" : parseInt(score) <= 60 ? "MEDIUM" : "HIGH"}
+    //       </span>
+    //     );
+    //   },
+    // },
+    // { accessorKey: "transfer_type", header: "TRANSFER TYPE" },
     {
       id: "action",
       header: "ACTION",
@@ -146,8 +147,8 @@ export const DashboardPage = () => {
             size={"icon"}
             variant={"ghost"}
             onClick={() =>
-              navigate("/dashboard/detail", {
-                state: { id: row.original.transaction_id },
+              navigate("/dashboard/reports", {
+                state: { id: row.original.id },
               })
             }
           >
@@ -177,13 +178,13 @@ export const DashboardPage = () => {
 
       <DataTable
         columns={columns}
-        data={transformedData}
+        data={transformedData ?? []}
         options={{
-          isLoading: loading,
+          isLoading: isLoading,
           disablePagination: false,
           manualPagination: true,
           disableSelection: true,
-          totalCounts: transformTransactionData(data ?? defaultTransaction, 'transactions')?.length,
+          totalCounts: transformedData?.length,
           pagination,
           setPagination,
         }}

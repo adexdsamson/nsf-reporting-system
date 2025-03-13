@@ -203,14 +203,6 @@ export const GeoMap = ({
   };
 
   useEffect(() => {
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
-  }, []);
-
-  useEffect(() => {
     const svg = select(svgRef.current);
 
     // use resized dimensions
@@ -242,7 +234,6 @@ export const GeoMap = ({
       )
       .attr("d", (feature) => pathGenerator(feature as any));
 
-
     // render transaction arcs with independent transitions
     svg
       .selectAll(".transaction")
@@ -253,15 +244,8 @@ export const GeoMap = ({
             .append("path")
             .attr("class", "transaction")
             .attr("fill", "none")
-            .attr("stroke", (d) => {
-              const sourceBank = banks.find(
-                (b) =>
-                  b.coordinates[0] === d.source[0] &&
-                  b.coordinates[1] === d.source[1]
-              );
-              return getBankColor(sourceBank, selectedBank);
-            })
-            .attr("stroke-width", 1.5)
+            .attr("stroke", "orange")
+            .attr("stroke-width", 2)
             .attr("d", (d) => generateArcPath(d.source, d.target, projection))
             .style("filter", "url(#glow)")
             .each(function () {
@@ -271,23 +255,14 @@ export const GeoMap = ({
                 .attr("stroke-dasharray", `${length} ${length}`)
                 .attr("stroke-dashoffset", length)
                 .transition()
-                .duration((d: any) => {
-                  // Calculate if it's an international transaction based on coordinates
-                  const sourceLat = d.source[1];
-                  const isInternational = Math.abs(sourceLat) > 15; // Rough latitude check for Nigeria's borders
-                  return isInternational ? 3000 : 500; // Slower for international, normal for domestic
-                })
+                .duration(2000)
                 .ease(easeLinear)
                 .attr("stroke-dashoffset", 0)
                 .transition()
-                .duration((d: any) => {
-                  const sourceLat = d.source[1];
-                  const isInternational = Math.abs(sourceLat) > 15;
-                  return isInternational ? 1600 : 800; // Slower fade-out for international transactions
-                })
+                .duration(1000)
                 .ease(easeLinear)
                 .attr("stroke-dashoffset", -length)
-                .attrTween("stroke-opacity", () => (t) => (1 - t).toString()) // Gradually fade out
+                .attrTween("stroke-opacity", () => (t) => (1 - t).toString())
                 .on("end", function () {
                   node.remove();
                 });
@@ -321,39 +296,6 @@ export const GeoMap = ({
             projection(d.coordinates)?.[1] || 0
           })`
       );
-
-    // Outer glow circle
-    // bankNodes
-    //   .selectAll(".bank-node-pulse")
-    //   .data((d) => [d])
-    //   .join("circle")
-    //   .attr("class", "bank-node-pulse")
-    //   .attr("r", 6)
-    //   .attr("fill", "none")
-    //   .attr("stroke", "#FF5533")
-    //   .attr("stroke-width", 2)
-    //   .attr("opacity", 0.6)
-    //   .style("filter", "url(#glow)")
-    //   .transition()
-    //   .duration(1500)
-    //   .attr("r", 12)
-    //   .attr("opacity", 0)
-    //   .ease(easeLinear)
-    //   .on("end", function () {
-    //     animationFrameRef.current = requestAnimationFrame(() => {
-    //       select(this)
-    //         .attr("r", 6)
-    //         .attr("opacity", 0.6)
-    //         .transition()
-    //         .duration(1500)
-    //         .attr("r", 12)
-    //         .attr("opacity", 0)
-    //         .ease(easeLinear)
-    //         .on("end", function () {
-    //           select(this).remove();
-    //         });
-    //     });
-    //   });
 
     // Main bank node
     bankNodes

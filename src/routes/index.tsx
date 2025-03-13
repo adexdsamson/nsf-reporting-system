@@ -8,6 +8,7 @@ import { PublicRoute } from "./PublicRoute";
 import { Login } from "@/pages/Login";
 import { DashboardPage } from "@/pages/DashboardPage";
 import { TransactionDetail } from "@/pages/Detail";
+import { Reports } from '@/pages/Reports/index';
 
 export const routes = (
   <>
@@ -33,6 +34,7 @@ export const routes = (
       {[
         { path: "/dashboard/home", element: <DashboardPage /> },
         { path: "/dashboard/detail", element: <TransactionDetail /> },
+        { path: "/dashboard/reports", element: <Reports /> },
       ].map((item, index) => (
         <Route
           key={index}

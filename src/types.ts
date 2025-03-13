@@ -83,7 +83,7 @@ export interface TransactionData {
   gift_card_currency: null | string;
   gift_card_transaction_id: null | string;
   rule_score: string;
-  ai_score: null |  string;
+  ai_score: null | string;
   overall_score: string;
 }
 
@@ -96,4 +96,45 @@ export interface SenderLocation {
   name: string;
   latitude: number;
   longitude: number;
+}
+
+export interface TransactionItem {
+  id: string;
+  root_transaction_id: string;
+  created_at: Date;
+  total_transactions: number;
+  total_amount: number;
+  status: string;
+}
+
+export interface TransactionDetails {
+  id: string;
+  root_transaction_id: string;
+  created_at: Date;
+  updated_at: Date;
+  transactions: Transaction[];
+  total_transactions: number;
+  total_amount: number;
+  status: string;
+}
+
+export interface Transaction {
+  amount: number;
+  status: string;
+  recipient: string;
+  timestamp: string;
+  bank_name: string;
+  bank_code: string;
+  tracking_id: string;
+  description: string;
+  queue_number: string;
+  bank_status?: string;
+  transaction_id: string;
+  transaction_type: string;
+  transaction_time?: string;
+  remaining_balance?: number;
+  recipient_bank_name: string;
+  recipient_bank_code: string;
+  transaction_amount?: number;
+  parent_tracking_id?: string;
 }

@@ -8,5 +8,5 @@ type ProtectedRoute = {
 
 export const PublicRoute = (props: ProtectedRoute) => {
   const isAuthenticated = useAuthentication();
-  return isAuthenticated ? <Navigate to="/dashboard/home" /> : props.children;
+  return !isAuthenticated ? <Navigate to="/dashboard/home" /> : props.children;
 };
