@@ -178,7 +178,7 @@ export const GeoMap = ({
   const [hoveredBank, setHoveredBank] = useState<Bank | null>(null);
   const [selectedBank, setSelectedBank] = useState<Bank | null>(null);
   const dimensions = useResizeObserver<HTMLDivElement>({ ref });
-  const animationFrameRef = useRef<number>();
+  // const animationFrameRef = useRef<number>();
 
   const generateArcPath = (
     source: [number, number],

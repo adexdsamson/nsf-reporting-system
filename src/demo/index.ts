@@ -1,4 +1,4 @@
-import { Transaction, TransactionDetails, TransactionItem } from "@/types";
+import { TransactionDetails, TransactionItem } from "@/types";
 import { faker } from "@faker-js/faker";
 
 export const makeArrayData = <T = unknown>(func: () => T) =>
@@ -1123,37 +1123,37 @@ enum TransactionStatus {
   ACTION = "action-required",
 }
 
-enum BankName {
-  GTBank = "GTBank",
-  FirstBank = "First Bank of Nigeria",
-  UBA = "UBA",
-  WEMA = "WEMA"
-}
+// enum BankName {
+//   GTBank = "GTBank",
+//   FirstBank = "First Bank of Nigeria",
+//   UBA = "UBA",
+//   WEMA = "WEMA"
+// }
 
-export const getTransactionFlow = (): Transaction[] => makeArrayData(() => ({
-  bank_code: faker.string.numeric({ length: 3 }),
-  description: faker.finance.transactionDescription(),
-  queue_number: faker.lorem.lines(),
-  receiver_account:  faker.finance.accountNumber({ length: 10 }),
-  receiver_bank: faker.helpers.enumValue(BankName),
-  receiver_bank_code: faker.string.numeric({ length: 3 }),
-  receiver_name: faker.person.fullName(),
-  recipient_bank_code: faker.string.numeric({ length: 3 }),
-  sender_account: faker.finance.accountNumber({ length: 10 }),
-  sender_bank: faker.helpers.enumValue(BankName),
-  sender_bank_code: faker.string.numeric({ length: 3 }),
-  sender_name:  faker.person.fullName(),
-  tracking_id: faker.string.uuid(),
-  amount: faker.number.int({ min: 1000, max: 10000 }),
-  transaction_id: faker.string.uuid(),
-  transaction_type: faker.helpers.enumValue(TransactionStatus),
-  parent_tracking_id: faker.string.uuid(),
-  recipient: faker.person.fullName(),
-  timestamp: faker.date.anytime().toISOString(),
-  transaction_amount: faker.number.int({ min: 1000, max: 10000 }),
-  transaction_time: faker.date.anytime(),
-  report_type: faker.helpers.enumValue(TransactionStatus),
-})) 
+// export const getTransactionFlow = (): Transaction[] => makeArrayData(() => ({
+//   bank_code: faker.string.numeric({ length: 3 }),
+//   description: faker.finance.transactionDescription(),
+//   queue_number: faker.lorem.lines(),
+//   receiver_account:  faker.finance.accountNumber({ length: 10 }),
+//   receiver_bank: faker.helpers.enumValue(BankName),
+//   receiver_bank_code: faker.string.numeric({ length: 3 }),
+//   receiver_name: faker.person.fullName(),
+//   recipient_bank_code: faker.string.numeric({ length: 3 }),
+//   sender_account: faker.finance.accountNumber({ length: 10 }),
+//   sender_bank: faker.helpers.enumValue(BankName),
+//   sender_bank_code: faker.string.numeric({ length: 3 }),
+//   sender_name:  faker.person.fullName(),
+//   tracking_id: faker.string.uuid(),
+//   amount: faker.number.int({ min: 1000, max: 10000 }),
+//   transaction_id: faker.string.uuid(),
+//   transaction_type: faker.helpers.enumValue(TransactionStatus),
+//   parent_tracking_id: faker.string.uuid(),
+//   recipient: faker.person.fullName(),
+//   timestamp: faker.date.anytime().toISOString(),
+//   transaction_amount: faker.number.int({ min: 1000, max: 10000 }),
+//   transaction_time: faker.date.anytime(),
+//   report_type: faker.helpers.enumValue(TransactionStatus),
+// })) 
 
 export const getTransactions = (): TransactionItem[] => makeArrayData(() => ({
   created_at: faker.date.anytime(),
@@ -1172,7 +1172,7 @@ export const getTransactionDetail = (): TransactionDetails => {
     status: faker.helpers.enumValue(TransactionStatus),
     total_amount: faker.number.int({ min: 1000, max: 10000 }),
     total_transactions: faker.number.int({ min: 1, max: 10 }),
-    transactions: getTransactionFlow(),
+    transactions: [],
     updated_at: faker.date.anytime(),
   }
 }

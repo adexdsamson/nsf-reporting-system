@@ -4,7 +4,6 @@ import {
   Background,
   Edge,
   Handle,
-  MarkerType,
   MiniMap,
   Node,
   Panel,
@@ -14,7 +13,7 @@ import {
   useNodesState,
 } from "@xyflow/react";
 import { Ban, Building, CreditCard } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 
 import '@xyflow/react/dist/style.css';
 import { Transaction } from "@/types";
@@ -146,7 +145,6 @@ export const TransactionFlow = ({
   transactions = [],
   activeReferenceNumber,
 }: TransactionFlowProps) => {
-  const [isAnimating, setIsAnimating] = useState(false);
 
   // Create nodes based on transactions
   const initialNodes: Node[] = useMemo(() => {
@@ -184,7 +182,7 @@ export const TransactionFlow = ({
 
     // Reset for accounts
     xPosition = 50;
-    let yPosition = 250;
+    // let yPosition = 250;
 
     // Process accounts
     // transactions.forEach((transaction, index) => {
@@ -248,7 +246,7 @@ export const TransactionFlow = ({
       }));
   }, [transactions]);
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [nodes, _, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
   const onConnect = useCallback(
