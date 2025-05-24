@@ -33,8 +33,8 @@ export const routes = (
     >
       {[
         { path: "/dashboard/home", element: <DashboardPage /> },
-        { path: "/dashboard/detail", element: <TransactionDetail /> },
-        { path: "/dashboard/reports", element: <Reports /> },
+        { path: "/dashboard/detail/:id", element: <TransactionDetail /> },
+        { path: "/dashboard/reports/:id", element: <Reports /> },
       ].map((item, index) => (
         <Route
           key={index}

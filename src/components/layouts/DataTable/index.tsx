@@ -32,6 +32,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import React, { ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
 
 type DataTableOptions = {
   disablePagination: boolean;
@@ -56,6 +57,8 @@ export function DataTable<T = unknown>({
   header,
   options,
 }: DataTable<T>) {
+  const navigate = useNavigate()
+
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -97,13 +100,13 @@ export function DataTable<T = unknown>({
         {header && (
           <div className="flex items-center py-4">{header?.(table)}</div>
         )}
-        <Table className=" border-separate border-spacing-y-3">
+        <Table className="">
           <TableHeader className="bg-accent">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead className="h-10" key={header.id}>
+                    <TableHead className="h-10 text-gray-200 !uppercase" key={header.id}>
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -121,11 +124,12 @@ export function DataTable<T = unknown>({
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
+                  onClick={() => navigate(`/dashboard/reports/${row.original.id}`)}
                   data-state={row.getIsSelected() && "selected"}
-                  className="bg-white"
+                  className="bg-white hover:bg-gray-100"
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell className="p-2" key={cell.id}>
+                    <TableCell className="py-2" key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()

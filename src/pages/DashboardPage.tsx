@@ -162,7 +162,7 @@ export const DashboardPage = () => {
   return (
     <div className="p-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Transactions</h1>
+        <h1 className="text-2xl font-bold">Transaction Reports</h1>
         <div className="flex gap-2">
           <Button variant="outline" size="icon">
             <BarChart2 className="h-4 w-4" />

@@ -48,4 +48,20 @@
     --sidebar-ring: 217.2 91.2% 59.8%
   }
 }
+
+@keyframes qrute-saturate {
+  0%, 100% {
+    filter: saturate(1);
+  }
+  50% {
+    filter: saturate(4);
+  }
+}
+
+.animate-qrute {
+  animation: qrute-saturate 1.2s ease-in-out infinite;
+  border: 2px solid #38bdf8; /* Tailwind sky-400 */
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.2);
+  border-radius: 6px;
+}
   

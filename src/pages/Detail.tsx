@@ -15,8 +15,9 @@ import {
   convertToGremlinPath,
   getFormatCurrency,
 } from "@/lib/utils";
-import { ApiResponseError, TransactionData } from "@/types";
+import { ApiResponse, ApiResponseError, TransactionData, TransactionItem } from "@/types";
 import { useQuery } from "@apollo/client";
+import { useQuery as useTSQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
   Receipt,
@@ -30,12 +31,12 @@ import {
   MapPin,
 } from "lucide-react";
 import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { ForceGraph } from "@/components/layouts/ForceGraph";
 import { TidyTree } from "@/components/layouts/TidyTree";
 import { ScoreCard } from "@/components/ui/score-card";
 import { useMutation } from "@tanstack/react-query";
-import { postRequest } from "@/lib/axiosInstance";
+import { getRequest, postRequest } from "@/lib/axiosInstance";
 import { useToastHandlers } from "@/hooks/useToaster";
 
 export const TransactionDetail = () => {
@@ -45,6 +46,14 @@ export const TransactionDetail = () => {
   >("details");
   const location = useLocation();
   const handler = useToastHandlers();
+  const { id } = useParams()
+
+  const { isLoading:initialLoading, data } = useTSQuery<ApiResponse<TransactionItem>, ApiResponseError>({
+    queryKey: ["transactions", id],
+    queryFn: async () => await getRequest(`transactions/${id}`),
+  })
+
+  console.log(data)
 
   const options = [
     {
@@ -84,11 +93,11 @@ export const TransactionDetail = () => {
   });
 
   // Keep the initial query to fetch first data
-  const { loading: initialLoading, data } = useQuery(GET_TRANSACTION, {
-    variables: { id: location.state?.id },
-    fetchPolicy: "network-only", // Used for first execution
-    nextFetchPolicy: "cache-first", // Used for subsequent executions
-  });
+  // const { loading: initialLoading, data } = useQuery(GET_TRANSACTION, {
+  //   variables: { id: location.state?.id },
+  //   fetchPolicy: "network-only", // Used for first execution
+  //   nextFetchPolicy: "cache-first", // Used for subsequent executions
+  // });
 
   const transformedData = transformSingleTransaction(data) as TransactionData;  
 
@@ -260,7 +269,7 @@ type ContentItemProps = {
   shouldExpand?: boolean;
 };
 
-const ContentItem = ({ value, title, shouldExpand }: ContentItemProps) => {
+export const ContentItem = ({ value, title, shouldExpand }: ContentItemProps) => {
   return (
     <div className={cn("flex flex-col gap-1", { "col-span-2": shouldExpand })}>
       <p className="text-wrap break-words">{value}</p>
