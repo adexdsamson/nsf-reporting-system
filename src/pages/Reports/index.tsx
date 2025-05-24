@@ -70,21 +70,21 @@
 // import React from 'react';
 
 // File: BankNetworkFlowDynamic.jsx
-import React, { useEffect, useState } from 'react';
-import ReactFlow, { Node, Edge, Background, Controls, Handle } from 'react-flow-renderer';
+import React, { useEffect, useRef, useState } from 'react';
+import ReactFlow, { Node, Edge, Background, Controls, Handle, ReactFlowInstance } from 'react-flow-renderer';
 import { getLayoutedElements } from '@/utils/layout';
 import { ApiResponse, ApiResponseError, TransactionItem } from '@/types';
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 import { getRequest } from '@/lib/axiosInstance';
 import { Position } from '@xyflow/react';
-import { stringToColour } from '../../utils/helpers';
+import { flattenTransactions, stringToColour } from '../../utils/helpers';
 import { ContentItem } from '../Detail';
 import { Button } from '@/components/ui/button';
 import { Eye, Shield, Calendar, Hash, DollarSign, User, Search, Download, Notebook, Check, Building, PiggyBank } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@radix-ui/react-separator';
-import { FaBuilding, FaCity } from 'react-icons/fa';
+import { FaBuilding, FaCity, FaMoneyBill } from 'react-icons/fa';
 import { MdCommentBank } from 'react-icons/md';
 
 export const Reports = () => {
@@ -101,10 +101,11 @@ export const Reports = () => {
   })
 
   useEffect(() => {
-    if (!data?.data.transactions) return
-    setSelectedTransaction(data?.data.transactions[0])
-  }, [data])
-
+    if (!data?.data.transactions) return;
+    // If the root is an object with children, select the root transaction itself
+    const rootTxn = data.data.transactions;
+    setSelectedTransaction(rootTxn);
+  }, [data]);
 
   const formatAmount = (amount: string | number) => {
     const formattedAmount = typeof amount === "number" ? amount.toLocaleString() : amount;
@@ -118,21 +119,10 @@ export const Reports = () => {
       //   label: `Bank ${i + 1}`,
       // }));
       
-    const fetchedNodes = data?.data?.transactions ?? []
-    if (!fetchedNodes) return
+    const txns = data?.data?.transactions ?? []
+    if (!txns) return
 
-    const fetchedEdges = []
-
-    for (let i = 0; i < fetchedNodes.length - 1; i++) {
-      const amount = fetchedNodes[i].amount ?? fetchedNodes[i].transaction_amount;
-      const formattedAmount = typeof amount === "number" ? amount.toLocaleString() : amount;
-      const edge = {
-        source: `${fetchedNodes[i].transaction_id}${i}`,
-        target: `${fetchedNodes[i + 1].transaction_id}${i + 1}`,
-        label: `₦${formattedAmount}`
-      }
-      fetchedEdges.push(edge)
-    }
+    const { nodes: rfNodes, edges: rfEdges } = flattenTransactions(txns);
 
     // const fetchedEdges = Array.from({ length: 4 }, () => {
     //   const source = `Bank${Math.ceil(Math.random() * 20)}`;
@@ -148,31 +138,37 @@ export const Reports = () => {
     // });
 
     // Convert to React Flow format
-    const rfNodes: Node[] = fetchedNodes.map((bank, index) => ({
-      id: `${bank.transaction_id}${index}`,
-      type: "custom",
-      data: { ...bank },
-      position: { x: 0, y: 0 },
-      style: {
-        background: stringToColour(bank.bank_name),
-        color: 'white',
-        padding: 10,
-        borderRadius: 2,
-        fontWeight: 'bold',
-        fontSize: 10,
-        // width: 100,
-      },
-      className: `${bank.queue_number == selectedTransaction?.queue_number ? "animate-qrute" : ""}`
-    }));
+    // const rfNodes: Node[] = fetchedNodes.map((bank, index) => ({
+    //   id: `${bank.transaction_id}${index}`,
+    //   type: "custom",
+    //   data: { ...bank },
+    //   position: { x: 0, y: 0 },
+    //   style: {
+    //     background: stringToColour(bank.bank_name),
+    //     color: 'white',
+    //     padding: 10,
+    //     borderRadius: 2,
+    //     fontWeight: 'bold',
+    //     fontSize: 10,
+    //     // width: 100,
+    //   },
+    //   className: `${bank.queue_number == selectedTransaction?.queue_number ? "animate-qrute" : ""}`
+    // }));
 
-    const rfEdges: Edge[] = fetchedEdges.map((link, index) => ({
-      id: `e${index}`,
-      source: link.source,
-      target: link.target,
-      label: link.label,
-      animated: true,
-      style: { stroke: '#facc15' },
-    }));
+    // const rfEdges: Edge[] = fetchedEdges.map((link, index) => ({
+    //   id: `e${index}`,
+    //   source: link.source,
+    //   target: link.target,
+    //   label: link.label,
+    //   animated: true,
+    //   style: { stroke: '#facc15' },
+    // }));
+
+    rfNodes.forEach(n => {
+      if (n.data.queue_number === selectedTransaction?.queue_number) {
+        n.className = "animate-qrute";
+      }
+    });
 
     const layouted = getLayoutedElements(rfNodes, rfEdges);
     setNodes(layouted.nodes);
@@ -182,18 +178,25 @@ export const Reports = () => {
   console.log("nodes", nodes)
   console.log("edges", edges)
 
-  const nodeTypes = { custom: ({data}) => (
-    <div onClick={() => setSelectedTransaction({...data})}>
-      <div className='flex items-center space-x-1'>
-        <FaBuilding />
-        <p className='whitespace-nowrap'>{data.bank_name}</p>
+  const nodeTypes = {
+    custom: (props: NodeProps) => (
+      <div
+        style={{ cursor: "grab" }}
+        className={`rounded-sm px-3 py-2 border border-slate-200 ${props.selected ? "ring-2 ring-blue-400" : ""}`}
+        onClick={() => setSelectedTransaction({ ...props.data })}
+        {...props}
+      >
+        <div className="flex items-center space-x-1">
+          <FaBuilding />
+          <p className="whitespace-nowrap">{props.data.bank_name}</p>
+        </div>
+        <Handle type="source" position={Position.Right} />
+        <Handle type="target" position={Position.Left} />
       </div>
-      {/* <p style={{fontSize: "7px", marginTop: "-0px"}}>{data?.bank_name}</p> */}
-      <Handle type="source" position={Position.Right} />
-      <Handle type="target" position={Position.Left} />
-    </div>
-  ) };
+    ),
+  };
 
+  if (!nodes || !edges || isLoading) return <></>
   return (
     <div className="h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       <div className="flex h-full w-full">
@@ -235,10 +238,11 @@ export const Reports = () => {
               nodes={nodes}
               edges={edges}
               fitView
-              nodesDraggable={false}
+              nodesDraggable={true}
               elementsSelectable={true}
               nodeTypes={nodeTypes}
-              >
+              // onInit={instance => { reactFlowRef.current = instance; }}
+            >
               <Background />
               <Controls />
             </ReactFlow>
@@ -263,7 +267,7 @@ export const Reports = () => {
                   Transaction ID
                 </div>
                 <div className="font-mono text-sm bg-slate-100/80 p-4 rounded-xl border border-slate-200">
-                  {selectedTransaction.transaction_id}
+                  {selectedTransaction?.transaction_id}
                 </div>
               </div>
 
@@ -273,7 +277,7 @@ export const Reports = () => {
                   Bank Name
                 </div>
                 <div className="text-sm bg-slate-100/80 p-4 rounded-xl border border-slate-200">
-                  {selectedTransaction.bank_name}
+                  {selectedTransaction?.bank_name}
                 </div>
               </div>
 
@@ -284,10 +288,10 @@ export const Reports = () => {
                   Timestamp
                 </div>
                 <div className="text-sm bg-slate-100/80 p-4 rounded-xl border border-slate-200">
-                  {selectedTransaction.timestamp
-                    ? new Date(selectedTransaction.timestamp).toLocaleString()
-                    : selectedTransaction.transaction_time
-                      ? new Date(selectedTransaction.transaction_time).toLocaleString()
+                  {selectedTransaction?.timestamp
+                    ? new Date(selectedTransaction?.timestamp).toLocaleString()
+                    : selectedTransaction?.transaction_time
+                      ? new Date(selectedTransaction?.transaction_time).toLocaleString()
                       : ""
                     }
                 </div>
@@ -300,7 +304,7 @@ export const Reports = () => {
                   Description
                 </div>
                 <div className="text-sm bg-slate-100/80 p-4 rounded-xl border border-slate-200">
-                  {selectedTransaction.description}
+                  {selectedTransaction?.description}
                 </div>
               </div>
 
@@ -311,18 +315,18 @@ export const Reports = () => {
                   Account Holder
                 </div>
                 <div className="text-sm bg-slate-100/80 p-4 rounded-xl border border-slate-200">
-                  {selectedTransaction.to ?? "---"}
+                  {selectedTransaction?.to ?? "---"}
                 </div>
               </div>
 
               {/* Balance */}
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
-                  <DollarSign className="w-4 h-4" />
+                  <FaMoneyBill className="w-4 h-4" />
                   Current Balance
                 </div>
                 <div className="text-sm bg-slate-100/80 p-4 rounded-xl border border-slate-200">
-                  ₦{formatAmount(selectedTransaction.remaining_balance) ?? "---"}
+                  ₦{formatAmount(selectedTransaction?.remaining_balance) ?? "---"}
                 </div>
               </div>
 

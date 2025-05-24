@@ -1,20 +1,21 @@
+import { DataTable } from "@/components/layouts/DataTable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DataTable } from "@/components/layouts/DataTable";
-import { ColumnDef, PaginationState } from "@tanstack/react-table";
-import { BarChart2, Settings2, Download, ChevronRight, Search, CheckCircle2, DollarSign, TrendingUp, BarChart3, Activity } from "lucide-react";
 import { ApiResponse, ApiResponseError, TransactionItem } from "@/types";
+import { ColumnDef, PaginationState } from "@tanstack/react-table";
+import { Activity, BarChart3, CheckCircle2, ChevronRight, Search, TrendingUp } from "lucide-react";
 // import { useQuery, useSubscription } from "@apollo/client";
 // import {
 //   GET_ALL_TRANSACTIONS,
 //   SUBSCRIBE_TO_TRANSACTION,
 // } from "@/lib/graphql/schema";
-import { format } from "date-fns";
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { getRequest } from "@/lib/axiosInstance";
 import { Card, CardContent } from "@/components/ui/card";
+import { getRequest } from "@/lib/axiosInstance";
+import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { useState } from "react";
+import { FaMoneyBill } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 
 export const DashboardPage = () => {
@@ -173,7 +174,7 @@ export const DashboardPage = () => {
               <h1 className="text-2xl font-bold text-slate-900">
                 Transaction Reports
               </h1>
-              <p className="text-slate-600">Monitor and analyze your transaction data</p>
+              <p className="text-slate-600">Monitor and analyze transaction reports</p>
             </div>
           </div>
         </div>
@@ -215,7 +216,7 @@ export const DashboardPage = () => {
                   </div>
                 </div>
                 <div className="h-12 w-12 bg-green-50 rounded-lg flex items-center justify-center">
-                  <DollarSign className="h-6 w-6 text-green-600" />
+                  <FaMoneyBill className="h-6 w-6 text-green-600" />
                 </div>
               </div>
             </CardContent>
