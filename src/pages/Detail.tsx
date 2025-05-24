@@ -1,9 +1,13 @@
+import { ForceGraph } from "@/components/layouts/ForceGraph";
+import { TidyTree } from "@/components/layouts/TidyTree";
 import { Button } from "@/components/ui/button";
 import ButtonDropDown from "@/components/ui/button-dropdown";
+import { ScoreCard } from "@/components/ui/score-card";
+import { useToastHandlers } from "@/hooks/useToaster";
+import { getRequest, postRequest } from "@/lib/axiosInstance";
 import {
-  GET_TRANSACTION,
   GET_BACKWARD_TRACING,
-  GET_FORWARD_TRACING,
+  GET_FORWARD_TRACING
 } from "@/lib/graphql/schema";
 import {
   transformSingleTransaction,
@@ -17,34 +21,27 @@ import {
 } from "@/lib/utils";
 import { ApiResponse, ApiResponseError, TransactionData, TransactionItem } from "@/types";
 import { useQuery } from "@apollo/client";
-import { useQuery as useTSQuery } from "@tanstack/react-query";
+import { useMutation, useQuery as useTSQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
-  Receipt,
-  User,
   Building,
-  Wallet,
+  ChevronLeft,
   CreditCard,
   Gift,
-  Smartphone,
-  ChevronLeft,
   MapPin,
+  Receipt,
+  Smartphone,
+  User,
+  Wallet,
 } from "lucide-react";
 import { useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { ForceGraph } from "@/components/layouts/ForceGraph";
-import { TidyTree } from "@/components/layouts/TidyTree";
-import { ScoreCard } from "@/components/ui/score-card";
-import { useMutation } from "@tanstack/react-query";
-import { getRequest, postRequest } from "@/lib/axiosInstance";
-import { useToastHandlers } from "@/hooks/useToaster";
+import { useNavigate, useParams } from "react-router-dom";
 
 export const TransactionDetail = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState<
     "backwardTrace" | "forwardTrace" | "details"
   >("details");
-  const location = useLocation();
   const handler = useToastHandlers();
   const { id } = useParams()
 

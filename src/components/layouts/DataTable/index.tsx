@@ -121,14 +121,14 @@ export function DataTable<T = unknown>({
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length && !options?.isLoading ? (
-              table.getRowModel().rows.map((row) => (
+              table.getRowModel().rows.map((row:any) => (
                 <TableRow
                   key={row.id}
                   onClick={() => navigate(`/dashboard/reports/${row.original.id}`)}
                   data-state={row.getIsSelected() && "selected"}
                   className="bg-white hover:bg-gray-100"
                 >
-                  {row.getVisibleCells().map((cell) => (
+                  {row.getVisibleCells().map((cell:any) => (
                     <TableCell className="py-2" key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
