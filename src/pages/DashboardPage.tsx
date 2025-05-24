@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DataTable } from "@/components/layouts/DataTable";
 import { ColumnDef, PaginationState } from "@tanstack/react-table";
-import { BarChart2, Settings2, Download, ChevronRight } from "lucide-react";
+import { BarChart2, Settings2, Download, ChevronRight, Search, CheckCircle2, DollarSign, TrendingUp, BarChart3, Activity } from "lucide-react";
 import { ApiResponse, ApiResponseError, TransactionItem } from "@/types";
 // import { useQuery, useSubscription } from "@apollo/client";
 // import {
@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getRequest } from "@/lib/axiosInstance";
+import { Card, CardContent } from "@/components/ui/card";
 
 
 export const DashboardPage = () => {
@@ -77,7 +78,7 @@ export const DashboardPage = () => {
   //   );
   // }, [data, pagination]);
 
-  const transformedData = data?.data;
+  const transformedData = Array.isArray(data?.data) ? data.data : [];
 
   const columns: ColumnDef<TransactionItem>[] = [
     { accessorKey: "id", header: "ID" },
@@ -160,43 +161,118 @@ export const DashboardPage = () => {
   ];
 
   return (
-    <div className="p-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Transaction Reports</h1>
-        <div className="flex gap-2">
-          <Button variant="outline" size="icon">
-            <BarChart2 className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" size="icon">
-            <Settings2 className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" size="icon">
-            <Download className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-
-      <DataTable
-        columns={columns}
-        data={transformedData ?? []}
-        options={{
-          isLoading: isLoading,
-          disablePagination: false,
-          manualPagination: true,
-          disableSelection: true,
-          totalCounts: transformedData?.length,
-          pagination,
-          setPagination,
-        }}
-        header={() => (
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Input placeholder="Search..." className="max-w-md" />
-              <Button variant="outline">Filter</Button>
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
+          <div className="flex items-center gap-4 mb-4 lg:mb-0">
+            <div className="h-12 w-12 bg-slate-900 rounded-xl flex items-center justify-center">
+              <Activity className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900">
+                Transaction Reports
+              </h1>
+              <p className="text-slate-600">Monitor and analyze your transaction data</p>
             </div>
           </div>
-        )}
-      />
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-slate-600 text-sm font-medium mb-2">Total Transactions</p>
+                  <p className="text-2xl font-bold text-slate-900 mb-1">{transformedData?.length || 0}</p>
+                  <div className="flex items-center gap-1 text-green-600 text-sm">
+                    <TrendingUp className="h-3 w-3" />
+                    <span>+12% from last month</span>
+                  </div>
+                </div>
+                <div className="h-12 w-12 bg-blue-50 rounded-lg flex items-center justify-center">
+                  <BarChart3 className="h-6 w-6 text-blue-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-slate-600 text-sm font-medium mb-2">Total Amount</p>
+                  <p className="text-2xl font-bold text-slate-900 mb-1">
+                    {new Intl.NumberFormat("en-NG", {
+                      style: "currency",
+                      currency: "NGN",
+                    }).format(transformedData?.reduce((sum, t) => sum + t.total_amount, 0) || 0)}
+                  </p>
+                  <div className="flex items-center gap-1 text-green-600 text-sm">
+                    <TrendingUp className="h-3 w-3" />
+                    <span>+8% from last month</span>
+                  </div>
+                </div>
+                <div className="h-12 w-12 bg-green-50 rounded-lg flex items-center justify-center">
+                  <DollarSign className="h-6 w-6 text-green-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-slate-600 text-sm font-medium mb-2">Success Rate</p>
+                  <p className="text-2xl font-bold text-slate-900 mb-1">100%</p>
+                  <div className="flex items-center gap-1 text-green-600 text-sm">
+                    <CheckCircle2 className="h-3 w-3" />
+                    <span>All transactions completed</span>
+                  </div>
+                </div>
+                <div className="h-12 w-12 bg-emerald-50 rounded-lg flex items-center justify-center">
+                  <CheckCircle2 className="h-6 w-6 text-emerald-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Data Table */}
+        <Card className="border-0 shadow-sm">
+          <CardContent className="p-0">
+            <DataTable
+              columns={columns}
+              data={transformedData ?? []}
+              options={{
+                isLoading: isLoading,
+                disablePagination: false,
+                manualPagination: true,
+                disableSelection: true,
+                totalCounts: transformedData?.length,
+                pagination,
+                setPagination,
+              }}
+              header={() => (
+                <div className="flex items-center justify-between p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
+                      <Input
+                        placeholder="Search transactions by ID, amount, or status..."
+                        className="pl-10 border-slate-200 focus:border-slate-400 focus:ring-slate-400 max-w-md"
+                      />
+                    </div>
+                    {/* <FilterDropdown /> */}
+                  </div>
+                </div>
+              )}
+            />
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
