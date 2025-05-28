@@ -70,7 +70,7 @@ export function DataTable<T = unknown>({
   const table = useReactTable({
     data,
     columns,
-    manualPagination: true,
+    manualPagination: false,
     onPaginationChange: options?.setPagination,
     onSortingChange: setSorting,
     rowCount: options?.totalCounts,
@@ -179,6 +179,7 @@ export function DataTable<T = unknown>({
             <PaginationContent>
               <PaginationItem>
                 <PaginationPrevious
+                  className="cursor-pointer"
                   onClick={() => {
                     table.previousPage();
                   }}
@@ -208,6 +209,7 @@ export function DataTable<T = unknown>({
 
               <PaginationItem>
                 <PaginationNext
+                  className="cursor-pointer"
                   onClick={() => {
                     table.nextPage();
                   }}

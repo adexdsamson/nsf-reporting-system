@@ -13,13 +13,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { getRequest } from "@/lib/axiosInstance";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaMoneyBill } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 
 export const DashboardPage = () => {
   const navigate = useNavigate();
+  const [search, setSearch] = useState("")
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
@@ -79,7 +80,21 @@ export const DashboardPage = () => {
   //   );
   // }, [data, pagination]);
 
-  const transformedData = Array.isArray(data?.data) ? data.data : [];
+  const rawData = Array.isArray(data?.data) ? data.data : []
+  const [transformedData, setTransformedData] = useState(rawData)
+
+  useEffect(() => {
+  if (isLoading || !data) return;
+  if (!search) {
+    setTransformedData(rawData);
+  } else {
+    setTransformedData(
+      rawData.filter((txn: any) =>
+        txn.root_transaction_id?.toLowerCase().includes(search.toLowerCase())
+      )
+    );
+  }
+}, [search, isLoading, data]);
 
   const columns: ColumnDef<TransactionItem>[] = [
     { accessorKey: "id", header: "ID" },
@@ -186,7 +201,7 @@ export const DashboardPage = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-slate-600 text-sm font-medium mb-2">Total Transactions</p>
-                  <p className="text-2xl font-bold text-slate-900 mb-1">{transformedData?.length || 0}</p>
+                  <p className="text-2xl font-bold text-slate-900 mb-1">{rawData?.length || 0}</p>
                   <div className="flex items-center gap-1 text-green-600 text-sm">
                     <TrendingUp className="h-3 w-3" />
                     <span>+12% from last month</span>
@@ -208,7 +223,7 @@ export const DashboardPage = () => {
                     {new Intl.NumberFormat("en-NG", {
                       style: "currency",
                       currency: "NGN",
-                    }).format(transformedData?.reduce((sum, t) => sum + t.total_amount, 0) || 0)}
+                    }).format(rawData?.reduce((sum, t) => sum + t.total_amount, 0) || 0)}
                   </p>
                   <div className="flex items-center gap-1 text-green-600 text-sm">
                     <TrendingUp className="h-3 w-3" />
@@ -264,6 +279,8 @@ export const DashboardPage = () => {
                       <Input
                         placeholder="Search transactions by ID, amount, or status..."
                         className="pl-10 border-slate-200 focus:border-slate-400 focus:ring-slate-400 max-w-md"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
                       />
                     </div>
                     {/* <FilterDropdown /> */}
