@@ -2,6 +2,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { getRequest } from '@/lib/axiosInstance';
 import { ApiResponse, ApiResponseError } from '@/types';
+import { stringToColour } from '@/utils/helpers';
 import { getLayoutedElements } from '@/utils/layout';
 import { Separator } from '@radix-ui/react-separator';
 import { useQuery } from '@tanstack/react-query';
@@ -10,7 +11,139 @@ import { useEffect, useState } from 'react';
 import ReactFlow, { Background, Controls, Edge, Handle, Node, NodeProps, Position } from 'react-flow-renderer';
 import { FaBuilding, FaMoneyBill } from 'react-icons/fa';
 import { useParams } from 'react-router-dom';
-import { flattenTransactions } from '../../utils/helpers';
+import { toast } from "@/components/ui/use-toast";
+
+
+const colorCodes:any = {
+  "Zenith Bank": "red",
+  "Access Bank": "#e17829",
+  "First Bank": "#004773"
+}
+
+export interface TransactionNode {
+  transaction_id?: string;
+  tracking_id?: string;
+  bank_name: string;
+  amount?: number;
+  children?: TransactionNode[];
+  [key: string]: any;
+}
+
+interface FlattenResult {
+  nodes: Node[];
+  edges: Edge[];
+}
+
+export function flattenTransactions(
+  txn: TransactionNode,
+  previousNodeId: string | null = null,
+  nodes: Node[] = [],
+  edges: Edge[] = [],
+  index: { i: number } = { i: 0 },
+  isRoot: boolean = true // <-- add this flag
+): FlattenResult {
+  // Create a unique receiver node id
+  const receiverNodeId = `${txn.transaction_id}_receiver_${index.i++}`;
+
+  // For the root transaction, also create a sender node and connect it to the receiver node
+  if (isRoot) {
+    const senderNodeId = `${txn.transaction_id}_sender_${index.i++}`;
+    nodes.push({
+      id: senderNodeId,
+      type: "custom",
+      data: {
+        ...txn,
+        label: txn.sender_account_name || txn.account_name,
+        account_number: txn.sender_account_number || txn.account_number,
+        bank_name: txn.sender_bank_name || txn.bank_name,
+        role: "sender",
+      },
+      position: { x: 0, y: 0 },
+      style: {
+        background: colorCodes[txn.sender_bank_name || txn.bank_name] || stringToColour(txn.sender_bank_name || txn.bank_name),
+        color: "white",
+        padding: 10,
+        borderRadius: 2,
+        fontWeight: "bold",
+        fontSize: 10,
+      },
+    });
+    // Add the receiver node for the root
+    nodes.push({
+      id: receiverNodeId,
+      type: "custom",
+      data: {
+        ...txn,
+        label: txn.receiver_account_name,
+        account_number: txn.receiver_account_number,
+        bank_name: txn.recipient_bank_name,
+        account: txn.amount,
+        role: "receiver",
+      },
+      position: { x: 0, y: 0 },
+      style: {
+        background: colorCodes[txn.recipient_bank_name] || stringToColour(txn.recipient_bank_name),
+        color: "white",
+        padding: 10,
+        borderRadius: 2,
+        fontWeight: "bold",
+        fontSize: 10,
+      },
+    });
+    // Connect sender to receiver for the root
+    edges.push({
+      id: `e_${senderNodeId}_${receiverNodeId}`,
+      source: senderNodeId,
+      target: receiverNodeId,
+      label: `₦${(txn.amount ?? txn.transaction_amount ?? 0).toLocaleString()}`,
+      animated: true,
+      style: { stroke: "#facc15", strokeDasharray: '5 5' },
+    });
+  } else {
+    // For all children, only add the receiver node and connect to parent receiver
+    nodes.push({
+      id: receiverNodeId,
+      type: "custom",
+      data: {
+        ...txn,
+        label: txn.receiver_account_name,
+        account_number: txn.receiver_account_number,
+        bank_name: txn.recipient_bank_name,
+        role: "receiver",
+      },
+      position: { x: 0, y: 0 },
+      style: {
+        background: colorCodes[txn.recipient_bank_name] || stringToColour(txn.recipient_bank_name),
+        color: "white",
+        padding: 10,
+        borderRadius: 2,
+        fontWeight: "bold",
+        fontSize: 10,
+      },
+    });
+    if (previousNodeId) {
+      edges.push({
+        id: `e_${previousNodeId}_${receiverNodeId}`,
+        source: previousNodeId,
+        target: receiverNodeId,
+        label: `₦${(txn.amount ?? txn.transaction_amount ?? 0).toLocaleString()}`,
+        animated: true,
+        style: { stroke: "#facc15", strokeDasharray: '5 5' },
+      });
+    }
+  }
+
+  // Recurse for children, passing this receiver as the parent
+  if (Array.isArray(txn.children)) {
+    txn.children.forEach(child =>
+      flattenTransactions(child, receiverNodeId, nodes, edges, index, false)
+    );
+  }
+
+  return { nodes, edges };
+}
+
+
 
 export const Reports = () => {
   const { id } = useParams();
@@ -57,7 +190,7 @@ export const Reports = () => {
       <div
         style={{ cursor: "grab" }}
         className={`rounded-sm px-3 py-2 border border-slate-200 ${props.selected ? "ring-2 ring-blue-400" : ""}`}
-        onClick={() => setSelectedTransaction({ ...props.data })}
+        onClick={() => setSelectedTransaction({ ...props.data, amount: props.data.amount ?? props.data.transaction_amount })}
       >
         <div className="flex items-center space-x-1">
           <FaBuilding />
@@ -194,7 +327,21 @@ export const Reports = () => {
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
                   <FaMoneyBill className="w-4 h-4" />
-                  Current Balance
+                  Balance Before Credit
+                </div>
+                <div className="text-sm bg-slate-100/80 p-4 rounded-xl border border-slate-200">
+                  ₦{formatAmount(
+                    (selectedTransaction?.remaining_balance ?? 0) +
+                    (selectedTransaction?.amount ?? 0)
+                  )}
+                </div>
+              </div>
+
+              {/* Balance */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                  <FaMoneyBill className="w-4 h-4" />
+                  Balance After Credit
                 </div>
                 <div className="text-sm bg-slate-100/80 p-4 rounded-xl border border-slate-200">
                   ₦{formatAmount(selectedTransaction?.remaining_balance ?? 0)}
@@ -207,7 +354,7 @@ export const Reports = () => {
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
                   <Shield className="w-4 h-4" />
-                  AI Analysis & Recommendations
+                  Recommendations
                 </div>
                 <div className="text-sm text-slate-700 bg-gradient-to-br from-blue-50 to-indigo-50 p-5 rounded-xl border border-blue-200 leading-relaxed">
                   Place PND on this account
@@ -222,7 +369,10 @@ export const Reports = () => {
               <Button onClick={() => setSelectedTransaction(null)} className="w-full bg-gradient-to-r from-slate-800 to-slate-900 hover:from-slate-900 hover:to-black text-white font-semibold shadow-lg">
                 Close
               </Button>
-              <Button className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold shadow-lg">
+              <Button
+                className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold shadow-lg"
+                onClick={() => toast({ title: "PND Suggested", description: "A Place No Debit (PND) action has successfully been suggested for this account." })}
+              >
                 Suggest PND
               </Button>
             </div>

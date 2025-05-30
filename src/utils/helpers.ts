@@ -38,7 +38,7 @@ export function flattenTransactions(
     data: { ...txn },
     position: { x: 0, y: 0 },
     style: {
-      background: stringToColour(txn.bank_name),
+      background: stringToColour("hello"),
       color: 'white',
       padding: 10,
       borderRadius: 2,
